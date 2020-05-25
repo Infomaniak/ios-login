@@ -31,7 +31,8 @@ public struct Constants {
     private var delegate: InfomaniakLoginDelegate?
     private var codeVerifier: String!
 
-    private override init() { }
+    private override init() {
+    }
 
     @objc public static func handleRedirectUri(url: URL, sourceApplication: String?) -> Bool {
         if let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value {
@@ -105,12 +106,12 @@ public struct Constants {
      */
     private func generateUrl() {
         loginUrl = loginUrl + "authorize/" +
-            "?response_type=\(Constants.RESPONSE_TYPE)" +
-            "&access_type=\(Constants.ACCESS_TYPE)" +
-            "&client_id=\(clientId!)" +
-            "&redirect_uri=\(redirectUri!)" +
-            "&code_challenge_method=\(codeChallengeMethod!)" +
-            "&code_challenge=\(codeChallenge!)"
+                "?response_type=\(Constants.RESPONSE_TYPE)" +
+                "&access_type=\(Constants.ACCESS_TYPE)" +
+                "&client_id=\(clientId!)" +
+                "&redirect_uri=\(redirectUri!)" +
+                "&code_challenge_method=\(codeChallengeMethod!)" +
+                "&code_challenge=\(codeChallenge!)"
     }
 
     /**
@@ -121,10 +122,10 @@ public struct Constants {
         var buffer = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
         return Data(buffer).base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
-            .trimmingCharacters(in: .whitespaces)
+                .replacingOccurrences(of: "+", with: "-")
+                .replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: "=", with: "")
+                .trimmingCharacters(in: .whitespaces)
     }
 
     /**
@@ -132,7 +133,9 @@ public struct Constants {
      * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
      */
     private func generateCodeChallenge(codeVerifier: String) -> String {
-        guard let data = codeVerifier.data(using: .utf8) else { return "" }
+        guard let data = codeVerifier.data(using: .utf8) else {
+            return ""
+        }
         var buffer = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
 
         data.withUnsafeBytes {
@@ -140,10 +143,10 @@ public struct Constants {
         }
 
         return Data(buffer).base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
-            .trimmingCharacters(in: .whitespaces)
+                .replacingOccurrences(of: "+", with: "-")
+                .replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: "=", with: "")
+                .trimmingCharacters(in: .whitespaces)
     }
 }
 
@@ -152,6 +155,7 @@ extension HTTPURLResponse {
         return statusCode >= 200 && statusCode <= 299
     }
 }
+
 extension Dictionary {
     func percentEncoded() -> Data? {
         return map { key, value in
@@ -159,10 +163,11 @@ extension Dictionary {
             let escapedValue = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
             return escapedKey + "=" + escapedValue
         }
-            .joined(separator: "&")
-            .data(using: .utf8)
+                .joined(separator: "&")
+                .data(using: .utf8)
     }
 }
+
 extension CharacterSet {
     static let urlQueryValueAllowed: CharacterSet = {
         let generalDelimitersToEncode = ":#[]@" // does not include "?" or "/" due to RFC 3986 - Section 3.4
