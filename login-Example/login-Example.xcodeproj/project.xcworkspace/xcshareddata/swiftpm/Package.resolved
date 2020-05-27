@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "InfomaniakLogin",
+        "repositoryURL": "git@gitlab.infomaniak.ch:infomaniak/mobile-app/ios/libraries/login.git",
+        "state": {
+          "branch": "master",
+          "revision": "b42879cc0c4be94fcdc8ba0bf5a52331bf4e33e4",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
