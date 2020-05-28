@@ -4,7 +4,7 @@ import CommonCrypto
 import SafariServices
 
 @objc public protocol InfomaniakLoginDelegate {
-    func didCompleteLoginWith(code: String, verifier: String)
+    func didCompleteLoginWith(code: String?, verifier: String)
 }
 
 public struct Constants {
@@ -35,10 +35,11 @@ public struct Constants {
     }
 
     @objc public static func handleRedirectUri(url: URL) -> Bool {
-        if let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value {
-            instance.safariViewController?.dismiss(animated: true) {
-                instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
-            }
+        let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value
+        instance.safariViewController?.dismiss(animated: true) {
+            instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
+        }
+        if code != nil {
             return true
         }
         return false

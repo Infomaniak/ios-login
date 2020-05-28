@@ -14,8 +14,12 @@ let redirectUri = "com.infomaniak.auth://oauth2redirect"
 
 class ViewController: UIViewController, InfomaniakLoginDelegate {
 
-    func didCompleteLoginWith(code: String, verifier: String) {
-        InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { (token, error) in }
+    func didCompleteLoginWith(code: String?, verifier: String) {
+        if let validCode = code {
+            InfomaniakLogin.getApiTokenUsing(code: validCode, codeVerifier: verifier) { (token, error) in }
+        } else {
+            print("DENY")
+        }
     }
 
     @IBAction func login(_ sender: UIButton) {

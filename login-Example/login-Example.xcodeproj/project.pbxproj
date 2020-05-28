@@ -13,7 +13,7 @@
 		C711BF48247E914E0018D5BF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C711BF46247E914E0018D5BF /* Main.storyboard */; };
 		C711BF4A247E91540018D5BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C711BF49247E91540018D5BF /* Assets.xcassets */; };
 		C711BF4D247E91540018D5BF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C711BF4B247E91540018D5BF /* LaunchScreen.storyboard */; };
-		C72EF9AE247FB23800F53C68 /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = C72EF9AD247FB23800F53C68 /* InfomaniakLogin */; };
+		C72EF9B7247FB50100F53C68 /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = C72EF9B6247FB50100F53C68 /* InfomaniakLogin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,7 +25,7 @@
 		C711BF49247E91540018D5BF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C711BF4C247E91540018D5BF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C711BF4E247E91540018D5BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C72EF9AC247FB23000F53C68 /* login */ = {isa = PBXFileReference; lastKnownFileType = folder; name = login; path = ..; sourceTree = "<group>"; };
+		C72EF9B5247FB4F500F53C68 /* login */ = {isa = PBXFileReference; lastKnownFileType = folder; name = login; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,7 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C72EF9AE247FB23800F53C68 /* InfomaniakLogin in Frameworks */,
+				C72EF9B7247FB50100F53C68 /* InfomaniakLogin in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,7 +74,7 @@
 		C72EF9A9247FB04D00F53C68 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C72EF9AC247FB23000F53C68 /* login */,
+				C72EF9B5247FB4F500F53C68 /* login */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -96,7 +96,7 @@
 			);
 			name = "login-Example";
 			packageProductDependencies = (
-				C72EF9AD247FB23800F53C68 /* InfomaniakLogin */,
+				C72EF9B6247FB50100F53C68 /* InfomaniakLogin */,
 			);
 			productName = "login-Example";
 			productReference = C711BF3D247E914E0018D5BF /* login-Example.app */;
@@ -357,7 +357,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		C72EF9AD247FB23800F53C68 /* InfomaniakLogin */ = {
+		C72EF9B6247FB50100F53C68 /* InfomaniakLogin */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = InfomaniakLogin;
 		};
