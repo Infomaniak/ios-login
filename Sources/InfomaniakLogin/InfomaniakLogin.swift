@@ -34,7 +34,7 @@ public struct Constants {
     private override init() {
     }
 
-    @objc public static func handleRedirectUri(url: URL, sourceApplication: String?) -> Bool {
+    @objc public static func handleRedirectUri(url: URL) -> Bool {
         if let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value {
             instance.safariViewController?.dismiss(animated: true) {
                 instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
