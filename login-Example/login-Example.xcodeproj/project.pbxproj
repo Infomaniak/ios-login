@@ -13,7 +13,7 @@
 		C711BF48247E914E0018D5BF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C711BF46247E914E0018D5BF /* Main.storyboard */; };
 		C711BF4A247E91540018D5BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C711BF49247E91540018D5BF /* Assets.xcassets */; };
 		C711BF4D247E91540018D5BF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C711BF4B247E91540018D5BF /* LaunchScreen.storyboard */; };
-		C711BF56247E91E70018D5BF /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = C711BF55247E91E70018D5BF /* InfomaniakLogin */; };
+		C72EF99E247FAB3100F53C68 /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = C72EF99D247FAB3100F53C68 /* InfomaniakLogin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +25,7 @@
 		C711BF49247E91540018D5BF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C711BF4C247E91540018D5BF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C711BF4E247E91540018D5BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C72EF99B247FAB2A00F53C68 /* InfomaniakLoginP */ = {isa = PBXFileReference; lastKnownFileType = folder; path = InfomaniakLoginP; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,7 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C711BF56247E91E70018D5BF /* InfomaniakLogin in Frameworks */,
+				C72EF99E247FAB3100F53C68 /* InfomaniakLogin in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,6 +45,8 @@
 			children = (
 				C711BF3F247E914E0018D5BF /* login-Example */,
 				C711BF3E247E914E0018D5BF /* Products */,
+				C72EF99B247FAB2A00F53C68 /* InfomaniakLoginP */,
+				C72EF99C247FAB3100F53C68 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +72,13 @@
 			path = "login-Example";
 			sourceTree = "<group>";
 		};
+		C72EF99C247FAB3100F53C68 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -86,7 +96,7 @@
 			);
 			name = "login-Example";
 			packageProductDependencies = (
-				C711BF55247E91E70018D5BF /* InfomaniakLogin */,
+				C72EF99D247FAB3100F53C68 /* InfomaniakLogin */,
 			);
 			productName = "login-Example";
 			productReference = C711BF3D247E914E0018D5BF /* login-Example.app */;
@@ -117,7 +127,6 @@
 			);
 			mainGroup = C711BF34247E914E0018D5BF;
 			packageReferences = (
-				C711BF54247E91E70018D5BF /* XCRemoteSwiftPackageReference "login" */,
 			);
 			productRefGroup = C711BF3E247E914E0018D5BF /* Products */;
 			projectDirPath = "";
@@ -347,21 +356,9 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		C711BF54247E91E70018D5BF /* XCRemoteSwiftPackageReference "login" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@gitlab.infomaniak.ch:infomaniak/mobile-app/ios/libraries/login.git";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		C711BF55247E91E70018D5BF /* InfomaniakLogin */ = {
+		C72EF99D247FAB3100F53C68 /* InfomaniakLogin */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C711BF54247E91E70018D5BF /* XCRemoteSwiftPackageReference "login" */;
 			productName = InfomaniakLogin;
 		};
 /* End XCSwiftPackageProductDependency section */

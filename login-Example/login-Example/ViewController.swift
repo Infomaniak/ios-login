@@ -15,18 +15,7 @@ let redirectUri = "com.infomaniak.auth://oauth2redirect"
 class ViewController: UIViewController, InfomaniakLoginDelegate {
 
     func didCompleteLoginWith(code: String, verifier: String) {
-        print("complete login")
-        InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { (token, error) in
-            if let e = error {
-                print(e)
-            }
-        }
-    }
-
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { (token, error) in }
     }
 
     @IBAction func login(_ sender: UIButton) {
