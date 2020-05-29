@@ -39,10 +39,7 @@ public struct Constants {
         instance.safariViewController?.dismiss(animated: true) {
             instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
         }
-        if code != nil {
-            return true
-        }
-        return false
+        return code != nil
     }
 
     @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, loginUrl: String? = Constants.LOGIN_URL, clientId: String, redirectUri: String) {
