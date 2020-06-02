@@ -13,13 +13,13 @@ let clientId = "1d06ddb8-65d7-4e45-a1b1-276f5da71833"
 let redirectUri = "com.infomaniak.auth://oauth2redirect"
 
 class ViewController: UIViewController, InfomaniakLoginDelegate {
+    func didNotCompleteLogin(error: String) {
+        print(error)
+    }
+    
 
-    func didCompleteLoginWith(code: String?, verifier: String) {
-        if let validCode = code {
-            InfomaniakLogin.getApiTokenUsing(code: validCode, codeVerifier: verifier) { (token, error) in }
-        } else {
-            print("DENY")
-        }
+    func didCompleteLoginWith(code: String, verifier: String) {
+        InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { (token, error) in }
     }
 
     @IBAction func login(_ sender: UIButton) {

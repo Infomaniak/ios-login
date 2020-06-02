@@ -4,7 +4,8 @@ import CommonCrypto
 import SafariServices
 
 @objc public protocol InfomaniakLoginDelegate {
-    func didCompleteLoginWith(code: String?, verifier: String)
+    func didCompleteLoginWith(code: String, verifier: String)
+    func didNotCompleteLogin(error: String)
 }
 
 public struct Constants {
@@ -33,14 +34,34 @@ public struct Constants {
 
     private override init() {
     }
-
+    
+   
     @objc public static func handleRedirectUri(url: URL) -> Bool {
-        let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value
-        instance.safariViewController?.dismiss(animated: true) {
-            instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
-        }
-        return code != nil
+        return checkResponse(url: url,
+                      onSuccess: { (code) in
+            instance.safariViewController?.dismiss(animated: true) {
+                instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
+            }
+        }, onFailure: { (error) in
+            instance.safariViewController?.dismiss(animated: true) {
+                instance.delegate?.didNotCompleteLogin(error: error)
+            }
+        })
     }
+    
+    @objc static func checkResponse(url: URL,
+                                       onSuccess: (String) -> Void,
+                                       onFailure: (String) -> Void
+       ) -> Bool {
+           if let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value {
+               onSuccess(code)
+               return true
+           } else {
+               onFailure("Accès refusé")
+               return false
+           }
+       }
+    
 
     @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, loginUrl: String? = Constants.LOGIN_URL, clientId: String, redirectUri: String) {
         let instance = InfomaniakLogin.instance
