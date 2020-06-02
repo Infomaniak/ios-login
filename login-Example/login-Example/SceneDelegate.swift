@@ -26,7 +26,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
             // Handle URL
-            InfomaniakLogin.handleRedirectUri(url: url)
+            // InfomaniakLogin.handleRedirectUri(url: url)
         }
     }
 
