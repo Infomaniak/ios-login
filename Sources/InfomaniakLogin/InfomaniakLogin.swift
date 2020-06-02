@@ -44,7 +44,7 @@ public struct Constants {
             }
         }, onFailure: { (error) in
             instance.safariViewController?.dismiss(animated: true) {
-                instance.delegate?.didFailLoginWith(error: NSLocalizedString(error, tableName: "InfomaniakLoginLocalizable", comment: ""))
+                instance.delegate?.didFailLoginWith(error: error)
             }
         })
     }
