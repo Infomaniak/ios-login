@@ -5,7 +5,7 @@ import SafariServices
 
 @objc public protocol InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String)
-    func didNotCompleteLogin(error: String)
+    func didFailLoginWith(error: String)
 }
 
 public struct Constants {
@@ -44,7 +44,7 @@ public struct Constants {
             }
         }, onFailure: { (error) in
             instance.safariViewController?.dismiss(animated: true) {
-                instance.delegate?.didNotCompleteLogin(error: error)
+                instance.delegate?.didFailLoginWith(error: error)
             }
         })
     }
