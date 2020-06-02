@@ -1,0 +1,9 @@
+/* 
+  InfomaniakLoginLocalizable.strings
+  login-Example
+
+  Created by Ambroise Decouttere on 02/06/2020.
+  Copyright © 2020 infomaniak. All rights reserved.
+*/
+
+"Accès refusé" = "Accesso negato";
