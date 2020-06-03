@@ -39,7 +39,6 @@
 
 
         @objc public static func handleRedirectUri(url: URL) -> Bool {
-            print("REDIRECT URL")
             return checkResponse(url: url,
                 onSuccess: { (code) in
                     instance.webView?.dismiss(animated: true) {
@@ -69,7 +68,6 @@
 
 
         @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, loginUrl: String? = Constants.LOGIN_URL, clientId: String, redirectUri: String) {
-            print("LOGIN")
             let instance = InfomaniakLogin.instance
             instance.delegate = delegate
             instance.loginUrl = loginUrl!
@@ -79,18 +77,15 @@
             instance.generateUrl()
 
             instance.webView = WebViewVC()
-            instance.webView?.setupWebView()
             
-
             guard let url = URL(string: instance.loginUrl) else {
                 return
             }
-            print("GOT URL = \(url)")
+            
+            viewController.present(instance.webView!, animated: true)
             let urlRequest = URLRequest(url: url)
             instance.webView?.webView.load(urlRequest)
-            print("WEBVIEW LOADED")
-//        instance.safariViewController = SFSafariViewController(url: url)
-//        viewController.present(instance.safariViewController!, animated: true)
+            
         }
 
         /**
