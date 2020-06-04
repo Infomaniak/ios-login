@@ -25,6 +25,11 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
         InfomaniakLogin.loginFrom(viewController: self, delegate: self, clientId: clientId, redirectUri: redirectUri)
     }
     
+    @IBAction func webviewLogin(_ sender: UIButton) {
+        InfomaniakLogin.webviewLoginFrom(viewController: self, delegate: self, clientId: clientId, redirectUri: redirectUri)
+    }
+    
+    
     func showError(error: String) {
         let alertController = UIAlertController(title: error, message:
         nil, preferredStyle: .alert)

@@ -19,6 +19,7 @@ class WebViewVC: UIViewController, WKUIDelegate {
         webView.uiDelegate = self
         view = webView
 //        webView?.addObserver(self, forKeyPath: "URL", options: .new, context: nil)
+
     }
 
 //    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
@@ -28,19 +29,23 @@ class WebViewVC: UIViewController, WKUIDelegate {
 //            }
 //        }
 //    }
+    
 
 
 }
 
 
+//MARK: - WKNavigationDelegate
+
 extension WebViewVC: WKNavigationDelegate {
-    
+
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
         if(navigationAction.navigationType == .formSubmitted) {
             if let urlScheme = navigationAction.request.url?.scheme {
                 //do what you need with url
                 if urlScheme == "com.infomaniak.auth" {
-                    if InfomaniakLogin.handleRedirectUri(url: navigationAction.request.url!) {
+                    
+                    if InfomaniakLogin.webviewHandleRedirectUri(url: navigationAction.request.url!) {
                         decisionHandler(.cancel)
                         return
                     }
@@ -49,5 +54,5 @@ extension WebViewVC: WKNavigationDelegate {
         }
         decisionHandler(.allow)
     }
-    
+
 }

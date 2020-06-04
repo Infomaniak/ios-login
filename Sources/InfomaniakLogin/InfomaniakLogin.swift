@@ -1,7 +1,7 @@
 #if canImport(UIKit)
     import UIKit
     import CommonCrypto
-//import SafariServices
+    import SafariServices
     import WebKit
 
     @objc public protocol InfomaniakLoginDelegate {
@@ -26,7 +26,7 @@
         private var codeChallengeMethod: String!
         private var codeChallenge: String!
 
-//    private var safariViewController: SFSafariViewController?
+        private var safariViewController: SFSafariViewController?
         private var webView: WebViewVC?
 
         private static let instance = InfomaniakLogin()
@@ -39,6 +39,21 @@
 
 
         @objc public static func handleRedirectUri(url: URL) -> Bool {
+            return checkResponse(url: url,
+                onSuccess: { (code) in
+                    instance.safariViewController?.dismiss(animated: true) {
+                        instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
+                    } },
+
+                onFailure: { (error) in
+                    instance.safariViewController?.dismiss(animated: true) {
+                        instance.delegate?.didFailLoginWith(error: error)
+                    }
+                }
+            )
+        }
+        
+        @objc public static func webviewHandleRedirectUri(url: URL) -> Bool {
             return checkResponse(url: url,
                 onSuccess: { (code) in
                     instance.webView?.dismiss(animated: true) {
@@ -76,17 +91,35 @@
             instance.generatePkceCodes()
             instance.generateUrl()
 
+            guard let url = URL(string: instance.loginUrl) else {
+                return
+            }
+            
+            instance.safariViewController = SFSafariViewController(url: url)
+            viewController.present(instance.safariViewController!, animated: true)
+        }
+        
+        
+        @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, loginUrl: String? = Constants.LOGIN_URL, clientId: String, redirectUri: String) {
+            let instance = InfomaniakLogin.instance
+            instance.delegate = delegate
+            instance.loginUrl = loginUrl!
+            instance.clientId = clientId
+            instance.redirectUri = redirectUri
+            instance.generatePkceCodes()
+            instance.generateUrl()
+            
             instance.webView = WebViewVC()
+            viewController.present(instance.webView!, animated: true)
             
             guard let url = URL(string: instance.loginUrl) else {
                 return
             }
             
-            viewController.present(instance.webView!, animated: true)
             let urlRequest = URLRequest(url: url)
             instance.webView?.webView.load(urlRequest)
-            
         }
+        
 
         /**
      * Get an api token async (callbakc on background thread)
