@@ -27,7 +27,8 @@
         private var codeChallenge: String!
 
         private var safariViewController: SFSafariViewController?
-        private var webView: WebViewVC?
+        private var webViewController: WebViewController?
+        private var navigationController: UINavigationController?
 
         private static let instance = InfomaniakLogin()
 
@@ -56,12 +57,12 @@
         @objc public static func webviewHandleRedirectUri(url: URL) -> Bool {
             return checkResponse(url: url,
                 onSuccess: { (code) in
-                    instance.webView?.dismiss(animated: true) {
+                    instance.webViewController?.dismiss(animated: true) {
                         instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
                     } },
 
                 onFailure: { (error) in
-                    instance.webView?.dismiss(animated: true) {
+                    instance.webViewController?.dismiss(animated: true) {
                         instance.delegate?.didFailLoginWith(error: error)
                     }
                 }
@@ -100,24 +101,24 @@
         }
         
         
-        @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, loginUrl: String? = Constants.LOGIN_URL, clientId: String, redirectUri: String) {
+        @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, loginUrl: String = Constants.LOGIN_URL, clientId: String, redirectUri: String) {
             let instance = InfomaniakLogin.instance
             instance.delegate = delegate
-            instance.loginUrl = loginUrl!
+            instance.loginUrl = loginUrl
             instance.clientId = clientId
             instance.redirectUri = redirectUri
             instance.generatePkceCodes()
             instance.generateUrl()
             
-            instance.webView = WebViewVC()
-            viewController.present(instance.webView!, animated: true)
-            
             guard let url = URL(string: instance.loginUrl) else {
                 return
             }
-            
             let urlRequest = URLRequest(url: url)
-            instance.webView?.webView.load(urlRequest)
+            instance.webViewController = WebViewController()
+
+            let navigationController = UINavigationController(rootViewController: instance.webViewController!)
+            viewController.present(navigationController, animated: true)
+            instance.webViewController?.urlRequest = urlRequest
         }
         
 
