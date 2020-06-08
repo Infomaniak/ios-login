@@ -34,6 +34,9 @@
 
         private var delegate: InfomaniakLoginDelegate?
         private var codeVerifier: String!
+        
+        private var webviewNavbarTitle: String? = nil
+        private var webviewNavbarColor: UIColor? = nil
 
         private override init() {
         }
@@ -101,7 +104,7 @@
         }
         
         
-        @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, loginUrl: String = Constants.LOGIN_URL, clientId: String, redirectUri: String) {
+        @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, loginUrl: String = Constants.LOGIN_URL, clientId: String, redirectUri: String, clearCookie: Bool) {
             let instance = InfomaniakLogin.instance
             instance.delegate = delegate
             instance.loginUrl = loginUrl
@@ -117,8 +120,19 @@
             instance.webViewController = WebViewController()
 
             let navigationController = UINavigationController(rootViewController: instance.webViewController!)
+            
             viewController.present(navigationController, animated: true)
             instance.webViewController?.urlRequest = urlRequest
+            instance.webViewController?.clearCookie = clearCookie
+            instance.webViewController?.navBarTitle = instance.webviewNavbarTitle
+            instance.webViewController?.navBarColor = instance.webviewNavbarColor
+            
+        }
+        
+        
+        public static func setupWebviewNavbar(title: String?, color: UIColor?) {
+            instance.webviewNavbarTitle = title
+            instance.webviewNavbarColor = color
         }
         
 

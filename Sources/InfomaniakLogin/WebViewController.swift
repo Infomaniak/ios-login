@@ -13,6 +13,9 @@ class WebViewController: UIViewController, WKUIDelegate {
 
     var webView: WKWebView!
     var urlRequest: URLRequest!
+    var clearCookie: Bool!
+    var navBarTitle: String?
+    var navBarColor: UIColor?
 
     override func loadView() {
         super.loadView()
@@ -32,7 +35,10 @@ class WebViewController: UIViewController, WKUIDelegate {
 
 
     func setupNavBar() {
-        self.title = "login.infomaniak.com"
+        self.title = navBarTitle ?? "login.infomaniak.com"
+        if navBarColor != nil {
+            self.navigationController?.navigationBar.backgroundColor = navBarColor
+        }
         let backButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonPressed))
         self.navigationItem.rightBarButtonItem = backButton
     }
@@ -45,7 +51,9 @@ class WebViewController: UIViewController, WKUIDelegate {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
-        cleanCookies()
+        if clearCookie {
+            cleanCookies()
+        }
     }
 
 
