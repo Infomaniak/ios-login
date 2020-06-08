@@ -16,7 +16,7 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
     func didFailLoginWith(error: String) {
         showError(error: error)
     }
-    
+
     func didCompleteLoginWith(code: String, verifier: String) {
         InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { (token, error) in }
     }
@@ -24,13 +24,13 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
     @IBAction func login(_ sender: UIButton) {
         InfomaniakLogin.loginFrom(viewController: self, delegate: self, clientId: clientId, redirectUri: redirectUri)
     }
-    
+
     @IBAction func webviewLogin(_ sender: UIButton) {
         InfomaniakLogin.setupWebviewNavbar(title: nil, color: UIColor.red)
         InfomaniakLogin.webviewLoginFrom(viewController: self, delegate: self, clientId: clientId, redirectUri: redirectUri, clearCookie: true)
     }
-    
-    
+
+
     func showError(error: String) {
         let alertController = UIAlertController(title: error, message:
         nil, preferredStyle: .alert)
@@ -40,6 +40,6 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
         }))
         present(alertController, animated: true, completion: nil)
     }
-    
+
 }
 

@@ -1,4 +1,3 @@
-
 //
 //  File.swift
 //
@@ -86,8 +85,8 @@ extension WebViewController: WKNavigationDelegate {
         }
         decisionHandler(.cancel)
     }
-    
-    
+
+
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
         if webView.url?.scheme == "com.infomaniak.auth" {
             InfomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
