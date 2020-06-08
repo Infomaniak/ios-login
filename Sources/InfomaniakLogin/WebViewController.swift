@@ -72,19 +72,26 @@ class WebViewController: UIViewController, WKUIDelegate {
 extension WebViewController: WKNavigationDelegate {
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
-        if(navigationAction.navigationType == .formSubmitted) {
-            if let urlScheme = navigationAction.request.url?.scheme {
-                //do what you need with url
-                if urlScheme == "com.infomaniak.auth" {
-
-                    if InfomaniakLogin.webviewHandleRedirectUri(url: navigationAction.request.url!) {
-                        decisionHandler(.cancel)
-                        return
-                    }
-                }
+        if let host = navigationAction.request.url?.host {
+            if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {
+                decisionHandler(.allow)
+                return
             }
         }
-        decisionHandler(.allow)
+        if let url = navigationAction.request.url?.absoluteString {
+            if url.contains("www.google.com/recaptcha") {
+                decisionHandler(.allow)
+                return
+            }
+        }
+        decisionHandler(.cancel)
+    }
+    
+    
+    func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
+        if webView.url?.scheme == "com.infomaniak.auth" {
+            InfomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
+        }
     }
 
 }
