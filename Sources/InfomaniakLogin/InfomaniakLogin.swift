@@ -37,6 +37,7 @@ public struct Constants {
 
     private var webviewNavbarTitle: String? = nil
     private var webviewNavbarColor: UIColor? = nil
+    private var clearCookie: Bool? = false
 
     private override init() {
     }
@@ -58,7 +59,7 @@ public struct Constants {
         )
     }
 
-    @objc public static func webviewHandleRedirectUri(url: URL) -> Bool {
+    @objc static func webviewHandleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
                 onSuccess: { (code) in
                     instance.webViewController?.dismiss(animated: true) {
@@ -109,7 +110,7 @@ public struct Constants {
 
     @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil,
                                               loginUrl: String = Constants.LOGIN_URL, clientId: String,
-                                              redirectUri: String, clearCookie: Bool) {
+                                              redirectUri: String) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.loginUrl = loginUrl
@@ -128,16 +129,17 @@ public struct Constants {
 
         viewController.present(navigationController, animated: true)
         instance.webViewController?.urlRequest = urlRequest
-        instance.webViewController?.clearCookie = clearCookie
+        instance.webViewController?.clearCookie = instance.clearCookie
         instance.webViewController?.navBarTitle = instance.webviewNavbarTitle
         instance.webViewController?.navBarColor = instance.webviewNavbarColor
 
     }
 
 
-    public static func setupWebviewNavbar(title: String?, color: UIColor?) {
+    public static func setupWebviewNavbar(title: String?, color: UIColor?, clearCookie: Bool? = false) {
         instance.webviewNavbarTitle = title
         instance.webviewNavbarColor = color
+        instance.clearCookie = clearCookie
     }
 
 

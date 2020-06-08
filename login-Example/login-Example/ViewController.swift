@@ -26,8 +26,8 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
     }
 
     @IBAction func webviewLogin(_ sender: UIButton) {
-        InfomaniakLogin.setupWebviewNavbar(title: nil, color: UIColor.red)
-        InfomaniakLogin.webviewLoginFrom(viewController: self, delegate: self, clientId: clientId, redirectUri: redirectUri, clearCookie: true)
+        InfomaniakLogin.setupWebviewNavbar(title: nil, color: UIColor.red, clearCookie: true)
+        InfomaniakLogin.webviewLoginFrom(viewController: self, delegate: self, clientId: clientId, redirectUri: redirectUri)
     }
 
 
