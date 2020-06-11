@@ -12,6 +12,7 @@ class WebViewController: UIViewController, WKUIDelegate {
 
     var webView: WKWebView!
     var urlRequest: URLRequest!
+    var redirectUri: String!
     var clearCookie: Bool!
     var navBarTitle: String?
     var navBarColor: UIColor?
@@ -88,7 +89,7 @@ extension WebViewController: WKNavigationDelegate {
 
 
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
-        if webView.url?.scheme == "com.infomaniak.auth" {
+        if webView.url?.scheme == redirectUri {
             InfomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
         }
     }

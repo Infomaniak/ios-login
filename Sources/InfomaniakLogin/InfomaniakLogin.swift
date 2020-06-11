@@ -129,6 +129,7 @@ public struct Constants {
 
         viewController.present(navigationController, animated: true)
         instance.webViewController?.urlRequest = urlRequest
+        instance.webViewController?.redirectUri = redirectUri
         instance.webViewController?.clearCookie = instance.clearCookie
         instance.webViewController?.navBarTitle = instance.webviewNavbarTitle
         instance.webViewController?.navBarColor = instance.webviewNavbarColor
