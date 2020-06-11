@@ -90,7 +90,7 @@ public struct Constants {
                                        delegate: InfomaniakLoginDelegate? = nil,
                                        loginUrl: String? = Constants.LOGIN_URL,
                                        clientId: String,
-                                       redirectUri: String) {
+                                       redirectUri: String = Bundle.main.bundleIdentifier ?? "") {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.loginUrl = loginUrl!
