@@ -88,12 +88,12 @@ public struct Constants {
 
     @objc public static func loginFrom(viewController: UIViewController,
                                        delegate: InfomaniakLoginDelegate? = nil,
-                                       loginUrl: String? = Constants.LOGIN_URL,
+                                       loginUrl: String = Constants.LOGIN_URL,
                                        clientId: String,
                                        redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect" ) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
-        instance.loginUrl = loginUrl!
+        instance.loginUrl = loginUrl
         instance.clientId = clientId
         instance.redirectUri = redirectUri
         instance.generatePkceCodes()
