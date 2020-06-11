@@ -144,8 +144,8 @@ public struct Constants {
 
 
     /**
- * Get an api token async (callbakc on background thread)
- */
+     * Get an api token async (callback on background thread)
+     */
     @objc public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
 
@@ -155,6 +155,39 @@ public struct Constants {
             "code": code,
             "code_verifier": codeVerifier,
             "redirect_uri": instance.redirectUri ?? ""]
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.httpBody = parameterDictionary.percentEncoded()
+
+        let session = URLSession.shared
+        session.dataTask(with: request) { (data, response, sessionError) in
+            if let response = response as? HTTPURLResponse {
+                if response.isSucessful() && data != nil && data!.count > 0 {
+                    do {
+                        let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
+                        completion(apiToken, nil)
+                    } catch {
+                        completion(nil, error)
+                    }
+                } else {
+                    completion(nil, sessionError)
+                }
+            } else {
+                completion(nil, sessionError)
+            }
+        }.resume()
+    }
+    
+    /**
+     * Refresh api token async (callback on background thread)
+     */
+    @objc public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
+        var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
+
+        let parameterDictionary: [String: Any] = [
+            "grant_type": "refresh_token",
+            "client_id": instance.clientId ?? "",
+            "refresh_token": token.refreshToken]
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = parameterDictionary.percentEncoded()
