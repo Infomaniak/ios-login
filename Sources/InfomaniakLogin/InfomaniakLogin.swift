@@ -36,7 +36,9 @@ public struct Constants {
     private var codeVerifier: String!
 
     private var webviewNavbarTitle: String? = nil
+    private var webviewNavbarTitleColor: UIColor? = nil
     private var webviewNavbarColor: UIColor? = nil
+    private var webviewNavbarButtonColor: UIColor? = nil
     private var clearCookie: Bool? = false
 
     private override init() {
@@ -128,20 +130,25 @@ public struct Constants {
         instance.webViewController?.redirectUri = instance.redirectUri
         instance.webViewController?.clearCookie = instance.clearCookie
         instance.webViewController?.navBarTitle = instance.webviewNavbarTitle
+        instance.webViewController?.navBarTitleColor = instance.webviewNavbarTitleColor
         instance.webViewController?.navBarColor = instance.webviewNavbarColor
+        instance.webViewController?.navBarButtonColor = instance.webviewNavbarButtonColor
+
     }
 
 
-    public static func setupWebviewNavbar(title: String?, color: UIColor?, clearCookie: Bool? = false) {
+    @objc public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false) {
         instance.webviewNavbarTitle = title
+        instance.webviewNavbarTitleColor = titleColor
         instance.webviewNavbarColor = color
+        instance.webviewNavbarButtonColor = buttonColor
         instance.clearCookie = clearCookie
     }
 
 
     /**
-     * Get an api token async (callback on background thread)
-     */
+ * Get an api token async (callback on background thread)
+ */
     @objc public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
 
@@ -173,10 +180,10 @@ public struct Constants {
             }
         }.resume()
     }
-    
+
     /**
-     * Refresh api token async (callback on background thread)
-     */
+ * Refresh api token async (callback on background thread)
+ */
     @objc public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
 
@@ -214,8 +221,8 @@ public struct Constants {
     }
 
     /**
- * Generate the complete login URL based on parameters and base
- */
+* Generate the complete login URL based on parameters and base
+*/
     private func generateUrl() {
         loginUrl = loginUrl + "authorize/" +
                 "?response_type=\(Constants.RESPONSE_TYPE)" +
@@ -227,9 +234,9 @@ public struct Constants {
     }
 
     /**
- * Generate a verifier code for PKCE challenge (rfc7636 4.1.)
- * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
- */
+* Generate a verifier code for PKCE challenge (rfc7636 4.1.)
+* https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
+*/
     private func generateCodeVerifier() -> String {
         var buffer = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
@@ -241,9 +248,9 @@ public struct Constants {
     }
 
     /**
- * Generate a challenge code for PKCE challenge (rfc7636 4.2.)
- * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
- */
+* Generate a challenge code for PKCE challenge (rfc7636 4.2.)
+* https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
+*/
     private func generateCodeChallenge(codeVerifier: String) -> String {
         guard let data = codeVerifier.data(using: .utf8) else {
             return ""
