@@ -9,9 +9,6 @@
 import UIKit
 import InfomaniakLogin
 
-let clientId = "1d06ddb8-65d7-4e45-a1b1-276f5da71833"
-let redirectUri = "com.infomaniak.auth://oauth2redirect"
-
 class ViewController: UIViewController, InfomaniakLoginDelegate {
     func didFailLoginWith(error: String) {
         showError(error: error)
@@ -22,12 +19,12 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
     }
 
     @IBAction func login(_ sender: UIButton) {
-        InfomaniakLogin.loginFrom(viewController: self, delegate: self, clientId: clientId, redirectUri: redirectUri)
+        InfomaniakLogin.loginFrom(viewController: self, delegate: self)
     }
 
     @IBAction func webviewLogin(_ sender: UIButton) {
         InfomaniakLogin.setupWebviewNavbar(title: nil, color: UIColor.red, clearCookie: true)
-        InfomaniakLogin.webviewLoginFrom(viewController: self, delegate: self, clientId: clientId, redirectUri: redirectUri)
+        InfomaniakLogin.webviewLoginFrom(viewController: self, delegate: self)
     }
 
 

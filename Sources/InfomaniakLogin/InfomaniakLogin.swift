@@ -42,7 +42,15 @@ public struct Constants {
     private override init() {
     }
 
-
+    @objc public static func initWith(clientId: String,
+                                      loginUrl: String = Constants.LOGIN_URL,
+                                      redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
+        assert(instance.clientId == nil, "Only one instance of InfomaniakLogin should be initiliazed")
+        instance.loginUrl = loginUrl
+        instance.clientId = clientId
+        instance.redirectUri = redirectUri
+    }
+    
     @objc public static func handleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
                 onSuccess: { (code) in
@@ -86,16 +94,9 @@ public struct Constants {
     }
 
 
-    @objc public static func loginFrom(viewController: UIViewController,
-                                       delegate: InfomaniakLoginDelegate? = nil,
-                                       loginUrl: String = Constants.LOGIN_URL,
-                                       clientId: String,
-                                       redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect" ) {
+    @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
-        instance.loginUrl = loginUrl
-        instance.clientId = clientId
-        instance.redirectUri = redirectUri
         instance.generatePkceCodes()
         instance.generateUrl()
 
@@ -108,14 +109,9 @@ public struct Constants {
     }
 
 
-    @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil,
-                                              loginUrl: String = Constants.LOGIN_URL, clientId: String,
-                                              redirectUri: String = "\(Bundle.main.bundleIdentifier  ?? "")://oauth2redirect") {
+    @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
-        instance.loginUrl = loginUrl
-        instance.clientId = clientId
-        instance.redirectUri = redirectUri
         instance.generatePkceCodes()
         instance.generateUrl()
 
@@ -129,11 +125,10 @@ public struct Constants {
 
         viewController.present(navigationController, animated: true)
         instance.webViewController?.urlRequest = urlRequest
-        instance.webViewController?.redirectUri = redirectUri
+        instance.webViewController?.redirectUri = instance.redirectUri
         instance.webViewController?.clearCookie = instance.clearCookie
         instance.webViewController?.navBarTitle = instance.webviewNavbarTitle
         instance.webViewController?.navBarColor = instance.webviewNavbarColor
-
     }
 
 
@@ -152,7 +147,7 @@ public struct Constants {
 
         let parameterDictionary: [String: Any] = [
             "grant_type": "authorization_code",
-            "client_id": instance.clientId ?? "",
+            "client_id": instance.clientId!,
             "code": code,
             "code_verifier": codeVerifier,
             "redirect_uri": instance.redirectUri ?? ""]
@@ -163,7 +158,7 @@ public struct Constants {
         let session = URLSession.shared
         session.dataTask(with: request) { (data, response, sessionError) in
             if let response = response as? HTTPURLResponse {
-                if response.isSucessful() && data != nil && data!.count > 0 {
+                if response.isSuccessful() && data != nil && data!.count > 0 {
                     do {
                         let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
                         completion(apiToken, nil)
@@ -187,7 +182,7 @@ public struct Constants {
 
         let parameterDictionary: [String: Any] = [
             "grant_type": "refresh_token",
-            "client_id": instance.clientId ?? "",
+            "client_id": instance.clientId!,
             "refresh_token": token.refreshToken]
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -196,7 +191,7 @@ public struct Constants {
         let session = URLSession.shared
         session.dataTask(with: request) { (data, response, sessionError) in
             if let response = response as? HTTPURLResponse {
-                if response.isSucessful() && data != nil && data!.count > 0 {
+                if response.isSuccessful() && data != nil && data!.count > 0 {
                     do {
                         let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
                         completion(apiToken, nil)
@@ -268,7 +263,7 @@ public struct Constants {
 }
 
 extension HTTPURLResponse {
-    func isSucessful() -> Bool {
+    func isSuccessful() -> Bool {
         return statusCode >= 200 && statusCode <= 299
     }
 }
