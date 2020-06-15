@@ -73,11 +73,12 @@ extension WebViewController: WKNavigationDelegate {
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
         if let host = navigationAction.request.url?.host {
+            print("HOST === \(host)")
             if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {
                 decisionHandler(.allow)
                 return
             }
-            print("HOST === \(host)")
+
         }
         if let url = navigationAction.request.url?.absoluteString {
             if url.contains("www.google.com/recaptcha") {
@@ -90,7 +91,7 @@ extension WebViewController: WKNavigationDelegate {
 
 
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
-        if webView.url?.scheme == redirectUri {
+        if webView.url?.absoluteString.starts(with: redirectUri) ?? false {
             InfomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
         }
     }
