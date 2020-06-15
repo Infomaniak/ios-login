@@ -77,6 +77,7 @@ extension WebViewController: WKNavigationDelegate {
                 decisionHandler(.allow)
                 return
             }
+            print("HOST === \(host)")
         }
         if let url = navigationAction.request.url?.absoluteString {
             if url.contains("www.google.com/recaptcha") {
