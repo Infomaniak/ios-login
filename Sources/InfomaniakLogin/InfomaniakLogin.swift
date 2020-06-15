@@ -36,7 +36,9 @@
         private var codeVerifier: String!
 
         private var webviewNavbarTitle: String? = nil
+        private var webviewNavbarTitleColor: UIColor? = nil
         private var webviewNavbarColor: UIColor? = nil
+        private var webviewNavbarButtonColor: UIColor? = nil
         private var clearCookie: Bool? = false
 
         private override init() {
@@ -132,14 +134,18 @@
             instance.webViewController?.redirectUri = redirectUri
             instance.webViewController?.clearCookie = instance.clearCookie
             instance.webViewController?.navBarTitle = instance.webviewNavbarTitle
+            instance.webViewController?.navBarTitleColor = instance.webviewNavbarTitleColor
             instance.webViewController?.navBarColor = instance.webviewNavbarColor
+            instance.webViewController?.navBarButtonColor = instance.webviewNavbarButtonColor
 
         }
 
 
-        @objc public static func setupWebviewNavbar(title: String?, color: UIColor?, clearCookie: Bool = false) {
+        @objc public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false) {
             instance.webviewNavbarTitle = title
+            instance.webviewNavbarTitleColor = titleColor
             instance.webviewNavbarColor = color
+            instance.webviewNavbarButtonColor = buttonColor
             instance.clearCookie = clearCookie
         }
 

@@ -15,7 +15,9 @@ class WebViewController: UIViewController, WKUIDelegate {
     var redirectUri: String!
     var clearCookie: Bool!
     var navBarTitle: String?
+    var navBarTitleColor: UIColor?
     var navBarColor: UIColor?
+    var navBarButtonColor: UIColor?
 
     override func loadView() {
         super.loadView()
@@ -36,11 +38,32 @@ class WebViewController: UIViewController, WKUIDelegate {
 
     func setupNavBar() {
         self.title = navBarTitle ?? "login.infomaniak.com"
-        if navBarColor != nil {
-            self.navigationController?.navigationBar.backgroundColor = navBarColor
+
+        if #available(iOS 13.0, *) {
+            let navigationAppaerance = UINavigationBarAppearance()
+            navigationAppaerance.configureWithDefaultBackground()
+            if navBarColor != nil {
+                navigationAppaerance.backgroundColor = navBarColor!
+            }
+            if navBarTitleColor != nil {
+                navigationAppaerance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor!]
+            }
+            self.navigationController?.navigationBar.standardAppearance = navigationAppaerance
+                        
+        } else {
+            if navBarColor != nil {
+                self.navigationController?.navigationBar.backgroundColor = navBarColor
+            }
+            if navBarTitleColor != nil {
+                self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor!]
+            }
         }
-        let backButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonPressed))
+        let backButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.doneButtonPressed))
+        if navBarButtonColor != nil {
+            backButton.tintColor = navBarButtonColor!
+        }
         self.navigationItem.rightBarButtonItem = backButton
+        
     }
 
 
@@ -73,12 +96,10 @@ extension WebViewController: WKNavigationDelegate {
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
         if let host = navigationAction.request.url?.host {
-            print("HOST === \(host)")
             if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {
                 decisionHandler(.allow)
                 return
             }
-
         }
         if let url = navigationAction.request.url?.absoluteString {
             if url.contains("www.google.com/recaptcha") {
