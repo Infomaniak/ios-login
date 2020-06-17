@@ -18,6 +18,8 @@ class WebViewController: UIViewController, WKUIDelegate {
     var navBarTitleColor: UIColor?
     var navBarColor: UIColor?
     var navBarButtonColor: UIColor?
+    
+    var progress: UIActivityIndicatorView!
 
     override func loadView() {
         super.loadView()
@@ -33,6 +35,13 @@ class WebViewController: UIViewController, WKUIDelegate {
         super.viewDidLoad()
         setupNavBar()
         webView.load(urlRequest)
+        
+        progress = UIActivityIndicatorView(style: .whiteLarge)
+        let progressSize = progress.bounds.width/2
+        progress.frame.origin = CGPoint(x: (UIScreen.main.bounds.width/2)-progressSize , y: (UIScreen.main.bounds.height/2)-progressSize)
+        progress.color = UIColor.gray
+        progress.startAnimating()
+        view.addSubview(progress)
     }
 
 
@@ -116,7 +125,16 @@ extension WebViewController: WKNavigationDelegate {
             InfomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
         }
     }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        progress.stopAnimating()
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        progress.stopAnimating()
+    }
 
 }
+
 
 
