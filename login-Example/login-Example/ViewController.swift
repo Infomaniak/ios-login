@@ -23,7 +23,7 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
     }
 
     @IBAction func webviewLogin(_ sender: UIButton) {
-        InfomaniakLogin.setupWebviewNavbar(title: nil, titleColor: nil, color: UIColor.systemBlue, buttonColor: UIColor.white, clearCookie: true)
+        InfomaniakLogin.setupWebviewNavbar(title: nil, titleColor: nil, color: UIColor.systemBlue, buttonColor: UIColor.white, clearCookie: true, timeOutMessage: "Problème de chargement !")
         InfomaniakLogin.webviewLoginFrom(viewController: self, delegate: self)
     }
 

@@ -40,6 +40,7 @@ public struct Constants {
     private var webviewNavbarColor: UIColor? = nil
     private var webviewNavbarButtonColor: UIColor? = nil
     private var clearCookie: Bool? = false
+    private var webviewTimeOutMessage: String? = nil
 
     private override init() {
     }
@@ -133,16 +134,18 @@ public struct Constants {
         instance.webViewController?.navBarTitleColor = instance.webviewNavbarTitleColor
         instance.webViewController?.navBarColor = instance.webviewNavbarColor
         instance.webViewController?.navBarButtonColor = instance.webviewNavbarButtonColor
+        instance.webViewController?.timeOutMessage = instance.webviewTimeOutMessage
 
     }
 
 
-    @objc public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false) {
+    @objc public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false, timeOutMessage: String?) {
         instance.webviewNavbarTitle = title
         instance.webviewNavbarTitleColor = titleColor
         instance.webviewNavbarColor = color
         instance.webviewNavbarButtonColor = buttonColor
         instance.clearCookie = clearCookie
+        instance.webviewTimeOutMessage = timeOutMessage
     }
 
 

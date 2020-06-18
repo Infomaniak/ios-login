@@ -20,6 +20,10 @@ class WebViewController: UIViewController, WKUIDelegate {
     var navBarButtonColor: UIColor?
     
     var progress: UIActivityIndicatorView!
+    
+    var timer: Timer?
+    let maxLoadingTime = 20.0
+    var timeOutMessage: String?
 
     override func loadView() {
         super.loadView()
@@ -35,15 +39,21 @@ class WebViewController: UIViewController, WKUIDelegate {
         super.viewDidLoad()
         setupNavBar()
         webView.load(urlRequest)
+        timer = Timer.scheduledTimer(timeInterval: maxLoadingTime, target: self, selector: #selector(timeOutError), userInfo: nil, repeats: false)
     }
     
     
     override func viewDidLayoutSubviews() {
-        progress = UIActivityIndicatorView(style: .whiteLarge)
-        progress.center = view.center
-        progress.color = UIColor.gray
-        progress.startAnimating()
-        view.addSubview(progress)
+        super.viewDidLayoutSubviews()
+        
+        if progress == nil {
+            progress = UIActivityIndicatorView(style: .whiteLarge)
+            progress.center = view.center
+            progress.color = UIColor.gray
+            progress.hidesWhenStopped = true
+            progress.startAnimating()
+            view.addSubview(progress)
+        }
     }
 
 
@@ -98,6 +108,15 @@ class WebViewController: UIViewController, WKUIDelegate {
             }
         }
     }
+    
+    @objc func timeOutError() {
+        let alertController = UIAlertController(title: timeOutMessage ?? "Page Not Loading !", message: nil, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: {
+            _ in
+            self.dismiss(animated: true, completion: nil)
+        }))
+        present(alertController, animated: true, completion: nil)
+    }
 }
 
 
@@ -135,6 +154,17 @@ extension WebViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         progress.stopAnimating()
     }
+    
+    
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        timer?.invalidate()
+    }
+    
+    
+    
+    
+    
+    
 
 }
 
