@@ -35,10 +35,12 @@ class WebViewController: UIViewController, WKUIDelegate {
         super.viewDidLoad()
         setupNavBar()
         webView.load(urlRequest)
-        
+    }
+    
+    
+    override func viewDidLayoutSubviews() {
         progress = UIActivityIndicatorView(style: .whiteLarge)
-        let progressSize = progress.bounds.width/2
-        progress.frame.origin = CGPoint(x: (UIScreen.main.bounds.width/2)-progressSize , y: (UIScreen.main.bounds.height/2)-progressSize)
+        progress.center = view.center
         progress.color = UIColor.gray
         progress.startAnimating()
         view.addSubview(progress)
