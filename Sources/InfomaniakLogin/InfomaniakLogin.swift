@@ -19,27 +19,25 @@ public struct Constants {
 
 @objc public class InfomaniakLogin: NSObject {
 
-    private var loginUrl: String!
+    private static let instance = InfomaniakLogin()
+    private var delegate: InfomaniakLoginDelegate?
+
     private var clientId: String!
+    private var loginUrl: String!
     private var redirectUri: String!
 
-    private var codeChallengeMethod: String!
     private var codeChallenge: String!
-
-    private var safariViewController: SFSafariViewController?
-    private var webViewController: WebViewController?
-    private var navigationController: UINavigationController?
-
-    private static let instance = InfomaniakLogin()
-
-    private var delegate: InfomaniakLoginDelegate?
+    private var codeChallengeMethod: String!
     private var codeVerifier: String!
 
+    private var safariViewController: SFSafariViewController?
+
+    private var clearCookie: Bool? = false
+    private var webViewController: WebViewController?
+    private var webviewNavbarButtonColor: UIColor? = nil
+    private var webviewNavbarColor: UIColor? = nil
     private var webviewNavbarTitle: String? = nil
     private var webviewNavbarTitleColor: UIColor? = nil
-    private var webviewNavbarColor: UIColor? = nil
-    private var webviewNavbarButtonColor: UIColor? = nil
-    private var clearCookie: Bool? = false
     private var webviewTimeOutMessage: String? = nil
 
     private override init() {
@@ -53,7 +51,7 @@ public struct Constants {
         instance.clientId = clientId
         instance.redirectUri = redirectUri
     }
-    
+
     @objc public static func handleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
                 onSuccess: { (code) in
@@ -96,7 +94,6 @@ public struct Constants {
         }
     }
 
-
     @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
@@ -110,7 +107,6 @@ public struct Constants {
         instance.safariViewController = SFSafariViewController(url: url)
         viewController.present(instance.safariViewController!, animated: true)
     }
-
 
     @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
@@ -138,7 +134,6 @@ public struct Constants {
 
     }
 
-
     @objc public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false, timeOutMessage: String?) {
         instance.webviewNavbarTitle = title
         instance.webviewNavbarTitleColor = titleColor
@@ -148,10 +143,9 @@ public struct Constants {
         instance.webviewTimeOutMessage = timeOutMessage
     }
 
-
     /**
- * Get an api token async (callback on background thread)
- */
+     * Get an api token async (callback on background thread)
+     */
     @objc public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
 
@@ -185,8 +179,8 @@ public struct Constants {
     }
 
     /**
- * Refresh api token async (callback on background thread)
- */
+     * Refresh api token async (callback on background thread)
+     */
     @objc public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
 
@@ -224,8 +218,8 @@ public struct Constants {
     }
 
     /**
-* Generate the complete login URL based on parameters and base
-*/
+    * Generate the complete login URL based on parameters and base
+    */
     private func generateUrl() {
         loginUrl = loginUrl + "authorize/" +
                 "?response_type=\(Constants.RESPONSE_TYPE)" +
@@ -237,9 +231,9 @@ public struct Constants {
     }
 
     /**
-* Generate a verifier code for PKCE challenge (rfc7636 4.1.)
-* https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
-*/
+    * Generate a verifier code for PKCE challenge (rfc7636 4.1.)
+    * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
+    */
     private func generateCodeVerifier() -> String {
         var buffer = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
@@ -251,9 +245,9 @@ public struct Constants {
     }
 
     /**
-* Generate a challenge code for PKCE challenge (rfc7636 4.2.)
-* https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
-*/
+    * Generate a challenge code for PKCE challenge (rfc7636 4.2.)
+    * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
+    */
     private func generateCodeChallenge(codeVerifier: String) -> String {
         guard let data = codeVerifier.data(using: .utf8) else {
             return ""

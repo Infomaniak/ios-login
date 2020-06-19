@@ -10,20 +10,20 @@ import WebKit
 
 class WebViewController: UIViewController, WKUIDelegate {
 
-    var webView: WKWebView!
-    var urlRequest: URLRequest!
-    var redirectUri: String!
     var clearCookie: Bool!
+    var navBarButtonColor: UIColor?
+    var navBarColor: UIColor?
     var navBarTitle: String?
     var navBarTitleColor: UIColor?
-    var navBarColor: UIColor?
-    var navBarButtonColor: UIColor?
-    
-    var progress: UIActivityIndicatorView!
-    
-    var timer: Timer?
+    var redirectUri: String!
+    var urlRequest: URLRequest!
+    var webView: WKWebView!
+
     let maxLoadingTime = 20.0
+    var progress: UIActivityIndicatorView!
     var timeOutMessage: String?
+    var timer: Timer?
+
 
     override func loadView() {
         super.loadView()
@@ -34,18 +34,16 @@ class WebViewController: UIViewController, WKUIDelegate {
         view = webView
     }
 
-
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavBar()
         webView.load(urlRequest)
         timer = Timer.scheduledTimer(timeInterval: maxLoadingTime, target: self, selector: #selector(timeOutError), userInfo: nil, repeats: false)
     }
-    
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
+
         if progress == nil {
             progress = UIActivityIndicatorView(style: .whiteLarge)
             progress.center = view.center
@@ -56,42 +54,38 @@ class WebViewController: UIViewController, WKUIDelegate {
         }
     }
 
-
     func setupNavBar() {
         self.title = navBarTitle ?? "login.infomaniak.com"
 
         if #available(iOS 13.0, *) {
             let navigationAppaerance = UINavigationBarAppearance()
             navigationAppaerance.configureWithDefaultBackground()
-            if navBarColor != nil {
-                navigationAppaerance.backgroundColor = navBarColor!
+            if let navBarColor = navBarColor {
+                navigationAppaerance.backgroundColor = navBarColor
             }
-            if navBarTitleColor != nil {
-                navigationAppaerance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor!]
+            if let navBarTitleColor = navBarTitleColor {
+                navigationAppaerance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
             }
             self.navigationController?.navigationBar.standardAppearance = navigationAppaerance
-                        
         } else {
-            if navBarColor != nil {
+            if let navBarColor = navBarColor {
                 self.navigationController?.navigationBar.backgroundColor = navBarColor
             }
-            if navBarTitleColor != nil {
-                self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor!]
+            if let navBarTitleColor = navBarTitleColor {
+                self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
             }
         }
+
         let backButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.doneButtonPressed))
-        if navBarButtonColor != nil {
-            backButton.tintColor = navBarButtonColor!
+        if navBarButtonColor = navBarButtonColor {
+            backButton.tintColor = navBarButtonColor
         }
         self.navigationItem.rightBarButtonItem = backButton
-        
     }
-
 
     @objc func doneButtonPressed() {
-        self.dismiss(animated: true) { }
+        self.dismiss(animated: true)
     }
-
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
@@ -100,7 +94,6 @@ class WebViewController: UIViewController, WKUIDelegate {
         }
     }
 
-
     func cleanCookies() {
         WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { (records) in
             for record in records {
@@ -108,7 +101,7 @@ class WebViewController: UIViewController, WKUIDelegate {
             }
         }
     }
-    
+
     @objc func timeOutError() {
         let alertController = UIAlertController(title: timeOutMessage ?? "Page Not Loading !", message: nil, preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: {
@@ -140,13 +133,12 @@ extension WebViewController: WKNavigationDelegate {
         decisionHandler(.cancel)
     }
 
-
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
         if webView.url?.absoluteString.starts(with: redirectUri) ?? false {
             InfomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
         }
     }
-    
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         progress.stopAnimating()
     }
@@ -154,17 +146,10 @@ extension WebViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         progress.stopAnimating()
     }
-    
-    
+
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         timer?.invalidate()
     }
-    
-    
-    
-    
-    
-    
 
 }
 
