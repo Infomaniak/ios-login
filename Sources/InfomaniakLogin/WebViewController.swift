@@ -77,7 +77,7 @@ class WebViewController: UIViewController, WKUIDelegate {
         }
 
         let backButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.doneButtonPressed))
-        if navBarButtonColor = navBarButtonColor {
+        if let navBarButtonColor = navBarButtonColor {
             backButton.tintColor = navBarButtonColor
         }
         self.navigationItem.rightBarButtonItem = backButton
