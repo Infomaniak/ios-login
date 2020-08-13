@@ -162,14 +162,20 @@ public struct Constants {
         let session = URLSession.shared
         session.dataTask(with: request) { (data, response, sessionError) in
             if let response = response as? HTTPURLResponse {
-                if response.isSuccessful() && data != nil && data!.count > 0 {
+                if data != nil && data!.count > 0 {
                     do {
-                        let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
-                        completion(apiToken, nil)
+                        if response.isSuccessful() {
+                            let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
+                            completion(apiToken, nil)
+                        } else {
+                            let apiError = try JSONDecoder().decode(ApiError.self, from: data!)
+                            completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error" : apiError]))
+                        }
                     } catch {
                         completion(nil, error)
                     }
-                } else {
+                }
+                else {
                     completion(nil, sessionError)
                 }
             } else {
@@ -195,14 +201,20 @@ public struct Constants {
         let session = URLSession.shared
         session.dataTask(with: request) { (data, response, sessionError) in
             if let response = response as? HTTPURLResponse {
-                if response.isSuccessful() && data != nil && data!.count > 0 {
+                if data != nil && data!.count > 0 {
                     do {
-                        let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
-                        completion(apiToken, nil)
+                        if response.isSuccessful() {
+                            let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
+                            completion(apiToken, nil)
+                        } else {
+                            let apiError = try JSONDecoder().decode(ApiError.self, from: data!)
+                            completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error" : apiError]))
+                        }
                     } catch {
                         completion(nil, error)
                     }
-                } else {
+                }
+                else {
                     completion(nil, sessionError)
                 }
             } else {
