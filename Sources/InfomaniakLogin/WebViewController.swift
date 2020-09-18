@@ -76,11 +76,11 @@ class WebViewController: UIViewController, WKUIDelegate {
             }
         }
 
-        let backButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.doneButtonPressed))
+        let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(self.doneButtonPressed))
         if let navBarButtonColor = navBarButtonColor {
             backButton.tintColor = navBarButtonColor
         }
-        self.navigationItem.rightBarButtonItem = backButton
+        self.navigationItem.leftBarButtonItem = backButton
     }
 
     @objc func doneButtonPressed() {
