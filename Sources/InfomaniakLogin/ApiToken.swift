@@ -40,4 +40,13 @@ import Foundation
         expirationDate = try values.decodeIfPresent(Date.self, forKey: .expirationDate) ?? newExpirationDate
     }
 
+    public init(accessToken: String, expiresIn: Int, refreshToken: String, scope: String, tokenType: String, userId: Int, expirationDate: Date) {
+        self.accessToken = accessToken
+        self.expiresIn = expiresIn
+        self.refreshToken = refreshToken
+        self.scope = scope
+        self.tokenType = tokenType
+        self.userId = userId
+        self.expirationDate = expirationDate
+    }
 }
