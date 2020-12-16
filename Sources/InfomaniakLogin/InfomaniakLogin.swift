@@ -46,7 +46,6 @@ public struct Constants {
     @objc public static func initWith(clientId: String,
                                       loginUrl: String = Constants.LOGIN_URL,
                                       redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
-        assert(instance.clientId == nil, "Only one instance of InfomaniakLogin should be initiliazed")
         instance.loginUrl = loginUrl
         instance.clientId = clientId
         instance.redirectUri = redirectUri
