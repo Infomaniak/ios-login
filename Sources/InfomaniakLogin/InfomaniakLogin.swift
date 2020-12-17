@@ -120,6 +120,7 @@ public struct Constants {
         instance.webViewController = WebViewController()
 
         let navigationController = UINavigationController(rootViewController: instance.webViewController!)
+        navigationController.modalPresentationStyle = .fullScreen
 
         viewController.present(navigationController, animated: true)
         instance.webViewController?.urlRequest = urlRequest
