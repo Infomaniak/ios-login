@@ -1,8 +1,9 @@
 //
-//  File.swift
+//  WebViewController.swift
+//  InfomaniakLogin
 //
-//
-//  Created by Ambroise Decouttere on 02/06/2020.
+//  Created by Ambroise Decouttere on 02.06.2020.
+//  Copyright © 2020 Infomaniak. All rights reserved.
 //
 
 import UIKit

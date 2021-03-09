@@ -1,8 +1,9 @@
 //
 //  ApiToken.swift
-//  Infomaniak
+//  InfomaniakLogin
 //
 //  Created by Philippe Weidmann on 16.04.20.
+//  Copyright © 2020 Infomaniak. All rights reserved.
 //
 
 import Foundation

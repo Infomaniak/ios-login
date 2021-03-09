@@ -1,4 +1,11 @@
-#if canImport(UIKit)
+//
+//  InfomaniakLogin.swift
+//  InfomaniakLogin
+//
+//  Created by Philippe Weidmann on 16.04.20.
+//  Copyright © 2020 Infomaniak. All rights reserved.
+//
+
 import UIKit
 import CommonCrypto
 import SafariServices
@@ -44,8 +51,8 @@ public struct Constants {
     }
 
     @objc public static func initWith(clientId: String,
-                                      loginUrl: String = Constants.LOGIN_URL,
-                                      redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
+        loginUrl: String = Constants.LOGIN_URL,
+        redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
         instance.loginUrl = loginUrl
         instance.clientId = clientId
         instance.redirectUri = redirectUri
@@ -53,33 +60,33 @@ public struct Constants {
 
     @objc public static func handleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
-                onSuccess: { (code) in
-                    instance.safariViewController?.dismiss(animated: true) {
-                        instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
-                    }
-                },
-
-                onFailure: { (error) in
-                    instance.safariViewController?.dismiss(animated: true) {
-                        instance.delegate?.didFailLoginWith(error: error)
-                    }
+            onSuccess: { (code) in
+                instance.safariViewController?.dismiss(animated: true) {
+                    instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
                 }
+            },
+
+            onFailure: { (error) in
+                instance.safariViewController?.dismiss(animated: true) {
+                    instance.delegate?.didFailLoginWith(error: error)
+                }
+            }
         )
     }
 
     @objc static func webviewHandleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
-                onSuccess: { (code) in
-                    instance.webViewController?.dismiss(animated: true) {
-                        instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
-                    }
-                },
-
-                onFailure: { (error) in
-                    instance.webViewController?.dismiss(animated: true) {
-                        instance.delegate?.didFailLoginWith(error: error)
-                    }
+            onSuccess: { (code) in
+                instance.webViewController?.dismiss(animated: true) {
+                    instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
                 }
+            },
+
+            onFailure: { (error) in
+                instance.webViewController?.dismiss(animated: true) {
+                    instance.delegate?.didFailLoginWith(error: error)
+                }
+            }
         )
     }
 
@@ -168,7 +175,7 @@ public struct Constants {
                             completion(apiToken, nil)
                         } else {
                             let apiError = try JSONDecoder().decode(ApiError.self, from: data!)
-                            completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error" : apiError]))
+                            completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error": apiError]))
                         }
                     } catch {
                         completion(nil, error)
@@ -207,7 +214,7 @@ public struct Constants {
                             completion(apiToken, nil)
                         } else {
                             let apiError = try JSONDecoder().decode(ApiError.self, from: data!)
-                            completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error" : apiError]))
+                            completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error": apiError]))
                         }
                     } catch {
                         completion(nil, error)
@@ -233,12 +240,12 @@ public struct Constants {
     */
     private func generateUrl() {
         loginUrl = loginUrl + "authorize/" +
-                "?response_type=\(Constants.RESPONSE_TYPE)" +
-                "&access_type=\(Constants.ACCESS_TYPE)" +
-                "&client_id=\(clientId!)" +
-                "&redirect_uri=\(redirectUri!)" +
-                "&code_challenge_method=\(codeChallengeMethod!)" +
-                "&code_challenge=\(codeChallenge!)"
+            "?response_type=\(Constants.RESPONSE_TYPE)" +
+            "&access_type=\(Constants.ACCESS_TYPE)" +
+            "&client_id=\(clientId!)" +
+            "&redirect_uri=\(redirectUri!)" +
+            "&code_challenge_method=\(codeChallengeMethod!)" +
+            "&code_challenge=\(codeChallenge!)"
     }
 
     /**
@@ -249,10 +256,10 @@ public struct Constants {
         var buffer = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
         return Data(buffer).base64EncodedString()
-                .replacingOccurrences(of: "+", with: "-")
-                .replacingOccurrences(of: "/", with: "_")
-                .replacingOccurrences(of: "=", with: "")
-                .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+            .trimmingCharacters(in: .whitespaces)
     }
 
     /**
@@ -270,10 +277,10 @@ public struct Constants {
         }
 
         return Data(buffer).base64EncodedString()
-                .replacingOccurrences(of: "+", with: "-")
-                .replacingOccurrences(of: "/", with: "_")
-                .replacingOccurrences(of: "=", with: "")
-                .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+            .trimmingCharacters(in: .whitespaces)
     }
 }
 
@@ -290,8 +297,8 @@ extension Dictionary {
             let escapedValue = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
             return escapedKey + "=" + escapedValue
         }
-                .joined(separator: "&")
-                .data(using: .utf8)
+            .joined(separator: "&")
+            .data(using: .utf8)
     }
 }
 
@@ -305,5 +312,3 @@ extension CharacterSet {
         return allowed
     }()
 }
-
-#endif
