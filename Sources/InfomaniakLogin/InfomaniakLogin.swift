@@ -26,6 +26,9 @@ public struct Constants {
 
 @objc public class InfomaniakLogin: NSObject {
 
+    private static let LOGIN_API_URL = "https://login.infomaniak.com/"
+    private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
+
     private static let instance = InfomaniakLogin()
     private var delegate: InfomaniakLoginDelegate?
 
@@ -153,7 +156,7 @@ public struct Constants {
      * Get an api token async (callback on background thread)
      */
     @objc public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
-        var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
+        var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
         let parameterDictionary: [String: Any] = [
             "grant_type": "authorization_code",
@@ -165,36 +168,14 @@ public struct Constants {
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = parameterDictionary.percentEncoded()
 
-        let session = URLSession.shared
-        session.dataTask(with: request) { (data, response, sessionError) in
-            if let response = response as? HTTPURLResponse {
-                if data != nil && data!.count > 0 {
-                    do {
-                        if response.isSuccessful() {
-                            let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
-                            completion(apiToken, nil)
-                        } else {
-                            let apiError = try JSONDecoder().decode(ApiError.self, from: data!)
-                            completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error": apiError]))
-                        }
-                    } catch {
-                        completion(nil, error)
-                    }
-                }
-                else {
-                    completion(nil, sessionError)
-                }
-            } else {
-                completion(nil, sessionError)
-            }
-        }.resume()
+        getApiToken(request: request, completion: completion)
     }
 
     /**
     * Get an api token async from an application password (callback on background thread)
     */
     @objc public static func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
-        var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
+        var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
         let parameterDictionary: [String: Any] = [
             "grant_type": "password",
@@ -206,6 +187,27 @@ public struct Constants {
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = parameterDictionary.percentEncoded()
 
+        getApiToken(request: request, completion: completion)
+    }
+
+    /**
+     * Refresh api token async (callback on background thread)
+     */
+    @objc public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
+        var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
+
+        let parameterDictionary: [String: Any] = [
+            "grant_type": "refresh_token",
+            "client_id": instance.clientId!,
+            "refresh_token": token.refreshToken]
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.httpBody = parameterDictionary.percentEncoded()
+
+        getApiToken(request: request, completion: completion)
+    }
+
+    private static func getApiToken(request: URLRequest, completion: @escaping (ApiToken?, Error?) -> Void) {
         let session = URLSession.shared
         session.dataTask(with: request) { (data, response, sessionError) in
             guard let response = response as? HTTPURLResponse,
@@ -224,45 +226,6 @@ public struct Constants {
                 }
             } catch {
                 completion(nil, error)
-            }
-        }.resume()
-    }
-
-    /**
-     * Refresh api token async (callback on background thread)
-     */
-    @objc public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
-        var request = URLRequest(url: URL(string: "https://login.infomaniak.com/token")!)
-
-        let parameterDictionary: [String: Any] = [
-            "grant_type": "refresh_token",
-            "client_id": instance.clientId!,
-            "refresh_token": token.refreshToken]
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        request.httpBody = parameterDictionary.percentEncoded()
-
-        let session = URLSession.shared
-        session.dataTask(with: request) { (data, response, sessionError) in
-            if let response = response as? HTTPURLResponse {
-                if data != nil && data!.count > 0 {
-                    do {
-                        if response.isSuccessful() {
-                            let apiToken = try JSONDecoder().decode(ApiToken.self, from: data!)
-                            completion(apiToken, nil)
-                        } else {
-                            let apiError = try JSONDecoder().decode(ApiError.self, from: data!)
-                            completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error": apiError]))
-                        }
-                    } catch {
-                        completion(nil, error)
-                    }
-                }
-                else {
-                    completion(nil, sessionError)
-                }
-            } else {
-                completion(nil, sessionError)
             }
         }.resume()
     }
