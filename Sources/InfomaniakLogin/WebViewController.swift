@@ -20,8 +20,10 @@ class WebViewController: UIViewController, WKUIDelegate {
     var urlRequest: URLRequest!
     var webView: WKWebView!
 
+    let progressView = UIProgressView(progressViewStyle: .default)
+    private var estimatedProgressObserver: NSKeyValueObservation?
+
     let maxLoadingTime = 20.0
-    var progress: UIActivityIndicatorView!
     var timeOutMessage: String?
     var timer: Timer?
 
@@ -38,20 +40,33 @@ class WebViewController: UIViewController, WKUIDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavBar()
+        setupProgressView()
+        setupEstimatedProgressObserver()
         webView.load(urlRequest)
         timer = Timer.scheduledTimer(timeInterval: maxLoadingTime, target: self, selector: #selector(timeOutError), userInfo: nil, repeats: false)
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
+    private func setupProgressView() {
 
-        if progress == nil {
-            progress = UIActivityIndicatorView(style: .whiteLarge)
-            progress.center = view.center
-            progress.color = UIColor.gray
-            progress.hidesWhenStopped = true
-            progress.startAnimating()
-            view.addSubview(progress)
+        guard let navigationBar = navigationController?.navigationBar else { return }
+
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        navigationBar.addSubview(progressView)
+
+        progressView.isHidden = true
+
+        NSLayoutConstraint.activate([
+            progressView.leadingAnchor.constraint(equalTo: navigationBar.leadingAnchor),
+            progressView.trailingAnchor.constraint(equalTo: navigationBar.trailingAnchor),
+
+            progressView.bottomAnchor.constraint(equalTo: navigationBar.bottomAnchor),
+            progressView.heightAnchor.constraint(equalToConstant: 2.0)
+            ])
+    }
+
+    private func setupEstimatedProgressObserver() {
+        estimatedProgressObserver = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] webView, _ in
+            self?.progressView.progress = Float(webView.estimatedProgress)
         }
     }
 
@@ -118,6 +133,16 @@ class WebViewController: UIViewController, WKUIDelegate {
 
 extension WebViewController: WKNavigationDelegate {
 
+    func webView(_: WKWebView, didStartProvisionalNavigation _: WKNavigation!) {
+        if progressView.isHidden {
+            progressView.isHidden = false
+        }
+        UIView.animate(withDuration: 0.33,
+            animations: {
+                self.progressView.alpha = 1.0
+            })
+    }
+
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
         if let host = navigationAction.request.url?.host {
             if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {
@@ -141,11 +166,13 @@ extension WebViewController: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        progress.stopAnimating()
-    }
-
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        progress.stopAnimating()
+        UIView.animate(withDuration: 0.33,
+            animations: {
+                self.progressView.alpha = 0.0
+            },
+            completion: { isFinished in
+                self.progressView.isHidden = isFinished
+            })
     }
 
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
