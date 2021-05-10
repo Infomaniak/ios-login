@@ -111,13 +111,13 @@ public struct Constants {
         }
     }
 
-    @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
+    @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, defaultEmail: String? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
         instance.generateUrl()
 
-        guard let url = URL(string: instance.loginUrl) else {
+        guard let url = getFormattedLoginUrl(with: defaultEmail) else {
             return
         }
 
@@ -125,15 +125,16 @@ public struct Constants {
         viewController.present(instance.safariViewController!, animated: true)
     }
 
-    @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
+    @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, defaultEmail: String? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
         instance.generateUrl()
 
-        guard let url = URL(string: instance.loginUrl) else {
+        guard let url = getFormattedLoginUrl(with: defaultEmail) else {
             return
         }
+
         let urlRequest = URLRequest(url: url)
         instance.webViewController = WebViewController()
 
@@ -291,6 +292,17 @@ public struct Constants {
             .replacingOccurrences(of: "=", with: "")
             .trimmingCharacters(in: .whitespaces)
     }
+
+    private static func getFormattedLoginUrl(with email: String? = nil) -> URL? {
+        var urlComponents = URLComponents(string: instance.loginUrl)
+        if let email = email {
+            urlComponents?.path = "/login"
+            urlComponents?.queryItems = [URLQueryItem(name: "login", value: email)]
+        }
+
+        return urlComponents?.url
+    }
+
 }
 
 extension HTTPURLResponse {
