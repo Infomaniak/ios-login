@@ -41,7 +41,7 @@ public struct Constants {
     private var delegate: InfomaniakLoginDelegate?
 
     private var clientId: String!
-    private var loginUrl: String!
+    private var loginBaseUrl: String!
     private var redirectUri: String!
 
     private var codeChallenge: String!
@@ -64,7 +64,7 @@ public struct Constants {
     @objc public static func initWith(clientId: String,
         loginUrl: String = Constants.LOGIN_URL,
         redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
-        instance.loginUrl = loginUrl
+        instance.loginBaseUrl = loginUrl
         instance.clientId = clientId
         instance.redirectUri = redirectUri
     }
@@ -111,31 +111,30 @@ public struct Constants {
         }
     }
 
-    @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, defaultEmail: String? = nil) {
+    @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
-        instance.generateUrl()
+        
 
-        guard let url = getFormattedLoginUrl(with: defaultEmail) else {
+        guard let loginUrl = instance.generateUrl() else {
             return
         }
 
-        instance.safariViewController = SFSafariViewController(url: url)
+        instance.safariViewController = SFSafariViewController(url: loginUrl)
         viewController.present(instance.safariViewController!, animated: true)
     }
 
-    @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil, defaultEmail: String? = nil) {
+    @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
-        instance.generateUrl()
 
-        guard let url = getFormattedLoginUrl(with: defaultEmail) else {
+        guard let loginUrl = instance.generateUrl() else {
             return
         }
 
-        let urlRequest = URLRequest(url: url)
+        let urlRequest = URLRequest(url: loginUrl)
         instance.webViewController = WebViewController()
 
         let navigationController = UINavigationController(rootViewController: instance.webViewController!)
@@ -248,14 +247,18 @@ public struct Constants {
     /**
     * Generate the complete login URL based on parameters and base
     */
-    private func generateUrl() {
-        loginUrl = loginUrl + "authorize/" +
-            "?response_type=\(Constants.RESPONSE_TYPE)" +
-            "&access_type=\(Constants.ACCESS_TYPE)" +
-            "&client_id=\(clientId!)" +
-            "&redirect_uri=\(redirectUri!)" +
-            "&code_challenge_method=\(codeChallengeMethod!)" +
-            "&code_challenge=\(codeChallenge!)"
+    private func generateUrl() -> URL? {
+        var urlComponents = URLComponents(string: loginBaseUrl)
+        urlComponents?.path = "/authorize/"
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "response_type", value: Constants.RESPONSE_TYPE),
+            URLQueryItem(name: "access_type", value: Constants.ACCESS_TYPE),
+            URLQueryItem(name: "client_id", value: clientId),
+            URLQueryItem(name: "redirect_uri", value: redirectUri),
+            URLQueryItem(name: "code_challenge_method", value: codeChallengeMethod),
+            URLQueryItem(name: "code_challenge", value: codeChallenge)
+        ]
+        return urlComponents?.url
     }
 
     /**
@@ -291,16 +294,6 @@ public struct Constants {
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "=", with: "")
             .trimmingCharacters(in: .whitespaces)
-    }
-
-    private static func getFormattedLoginUrl(with email: String? = nil) -> URL? {
-        var urlComponents = URLComponents(string: instance.loginUrl)
-        if let email = email {
-            urlComponents?.path = "/login"
-            urlComponents?.queryItems = [URLQueryItem(name: "login", value: email)]
-        }
-
-        return urlComponents?.url
     }
 
 }
