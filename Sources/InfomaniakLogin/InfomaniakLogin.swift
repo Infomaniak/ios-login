@@ -249,7 +249,7 @@ public struct Constants {
     */
     private func generateUrl() -> URL? {
         var urlComponents = URLComponents(string: loginBaseUrl)
-        urlComponents?.path = "/authorize/"
+        urlComponents?.path = "/authorize"
         urlComponents?.queryItems = [
             URLQueryItem(name: "response_type", value: Constants.RESPONSE_TYPE),
             URLQueryItem(name: "access_type", value: Constants.ACCESS_TYPE),
