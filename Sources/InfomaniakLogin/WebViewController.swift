@@ -181,6 +181,20 @@ extension WebViewController: WKNavigationDelegate {
             completion: { isFinished in
                 self.progressView.isHidden = isFinished
             })
+        //Thank you Tim Apple
+        let jsInjection = """
+                var els = document.querySelectorAll("a[href='https://welcome.infomaniak.com/signupnull']")[0];
+                if(els) {
+                    els.previousElementSibling.remove();
+                    els.remove();
+                }
+                window.addEventListener('load', function() {
+                        var els = document.querySelectorAll("a[href='https://welcome.infomaniak.com/signupnull']")[0];
+                        els.previousElementSibling.remove();
+                        els.remove();
+                })
+                """
+        webView.evaluateJavaScript(jsInjection, completionHandler: nil)
     }
 
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
