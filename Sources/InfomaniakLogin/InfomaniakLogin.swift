@@ -115,7 +115,6 @@ public struct Constants {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
-        
 
         guard let loginUrl = instance.generateUrl() else {
             return
@@ -137,9 +136,13 @@ public struct Constants {
         let urlRequest = URLRequest(url: loginUrl)
         instance.webViewController = WebViewController()
 
-        let navigationController = UINavigationController(rootViewController: instance.webViewController!)
+        if let navigationController = viewController as? UINavigationController {
+            navigationController.pushViewController(instance.webViewController!, animated: true)
+        } else {
+            let navigationController = UINavigationController(rootViewController: instance.webViewController!)
+            viewController.present(navigationController, animated: true)
+        }
 
-        viewController.present(navigationController, animated: true)
         instance.webViewController?.urlRequest = urlRequest
         instance.webViewController?.redirectUri = instance.redirectUri
         instance.webViewController?.clearCookie = instance.clearCookie
