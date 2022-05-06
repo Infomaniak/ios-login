@@ -1,22 +1,22 @@
 /*
-Copyright 2020 Infomaniak Network SA
+ Copyright 2020 Infomaniak Network SA
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
 
-import UIKit
 import CommonCrypto
 import SafariServices
+import UIKit
 import WebKit
 
 @objc public protocol InfomaniakLoginDelegate {
@@ -24,7 +24,7 @@ import WebKit
     func didFailLoginWith(error: String)
 }
 
-public struct Constants {
+public enum Constants {
     public static let LOGIN_URL = "https://login.infomaniak.com/"
     public static let RESPONSE_TYPE = "code"
     public static let ACCESS_TYPE = "offline"
@@ -33,7 +33,6 @@ public struct Constants {
 }
 
 @objc public class InfomaniakLogin: NSObject {
-
     private static let LOGIN_API_URL = "https://login.infomaniak.com/"
     private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
 
@@ -52,18 +51,17 @@ public struct Constants {
 
     private var clearCookie: Bool? = false
     private var webViewController: WebViewController?
-    private var webviewNavbarButtonColor: UIColor? = nil
-    private var webviewNavbarColor: UIColor? = nil
-    private var webviewNavbarTitle: String? = nil
-    private var webviewNavbarTitleColor: UIColor? = nil
-    private var webviewTimeOutMessage: String? = nil
+    private var webviewNavbarButtonColor: UIColor?
+    private var webviewNavbarColor: UIColor?
+    private var webviewNavbarTitle: String?
+    private var webviewNavbarTitleColor: UIColor?
+    private var webviewTimeOutMessage: String?
 
-    private override init() {
-    }
+    override private init() {}
 
     @objc public static func initWith(clientId: String,
-        loginUrl: String = Constants.LOGIN_URL,
-        redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
+                                      loginUrl: String = Constants.LOGIN_URL,
+                                      redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
         instance.loginBaseUrl = loginUrl
         instance.clientId = clientId
         instance.redirectUri = redirectUri
@@ -71,34 +69,32 @@ public struct Constants {
 
     @objc public static func handleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
-            onSuccess: { (code) in
-                instance.safariViewController?.dismiss(animated: true) {
-                    instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
-                }
-            },
+                             onSuccess: { code in
+                                 instance.safariViewController?.dismiss(animated: true) {
+                                     instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
+                                 }
+                             },
 
-            onFailure: { (error) in
-                instance.safariViewController?.dismiss(animated: true) {
-                    instance.delegate?.didFailLoginWith(error: error)
-                }
-            }
-        )
+                             onFailure: { error in
+                                 instance.safariViewController?.dismiss(animated: true) {
+                                     instance.delegate?.didFailLoginWith(error: error)
+                                 }
+                             })
     }
 
     @objc static func webviewHandleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
-            onSuccess: { (code) in
-                instance.webViewController?.dismiss(animated: true) {
-                    instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
-                }
-            },
+                             onSuccess: { code in
+                                 instance.webViewController?.dismiss(animated: true) {
+                                     instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
+                                 }
+                             },
 
-            onFailure: { (error) in
-                instance.webViewController?.dismiss(animated: true) {
-                    instance.delegate?.didFailLoginWith(error: error)
-                }
-            }
-        )
+                             onFailure: { error in
+                                 instance.webViewController?.dismiss(animated: true) {
+                                     instance.delegate?.didFailLoginWith(error: error)
+                                 }
+                             })
     }
 
     @objc static func checkResponse(url: URL, onSuccess: (String) -> Void, onFailure: (String) -> Void) -> Bool {
@@ -151,7 +147,6 @@ public struct Constants {
         instance.webViewController?.navBarColor = instance.webviewNavbarColor
         instance.webViewController?.navBarButtonColor = instance.webviewNavbarButtonColor
         instance.webViewController?.timeOutMessage = instance.webviewTimeOutMessage
-
     }
 
     @objc public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false, timeOutMessage: String?) {
@@ -174,7 +169,8 @@ public struct Constants {
             "client_id": instance.clientId!,
             "code": code,
             "code_verifier": codeVerifier,
-            "redirect_uri": instance.redirectUri ?? ""]
+            "redirect_uri": instance.redirectUri ?? ""
+        ]
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = parameterDictionary.percentEncoded()
@@ -183,8 +179,8 @@ public struct Constants {
     }
 
     /**
-    * Get an api token async from an application password (callback on background thread)
-    */
+     * Get an api token async from an application password (callback on background thread)
+     */
     @objc public static func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
@@ -193,7 +189,8 @@ public struct Constants {
             "access_type": "offline",
             "client_id": instance.clientId!,
             "username": username,
-            "password": applicationPassword]
+            "password": applicationPassword
+        ]
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = parameterDictionary.percentEncoded()
@@ -210,7 +207,8 @@ public struct Constants {
         let parameterDictionary: [String: Any] = [
             "grant_type": "refresh_token",
             "client_id": instance.clientId!,
-            "refresh_token": token.refreshToken]
+            "refresh_token": token.refreshToken
+        ]
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = parameterDictionary.percentEncoded()
@@ -220,9 +218,9 @@ public struct Constants {
 
     private static func getApiToken(request: URLRequest, completion: @escaping (ApiToken?, Error?) -> Void) {
         let session = URLSession.shared
-        session.dataTask(with: request) { (data, response, sessionError) in
+        session.dataTask(with: request) { data, response, sessionError in
             guard let response = response as? HTTPURLResponse,
-                let data = data, data.count > 0 else {
+                  let data = data, data.count > 0 else {
                 completion(nil, sessionError)
                 return
             }
@@ -248,8 +246,8 @@ public struct Constants {
     }
 
     /**
-    * Generate the complete login URL based on parameters and base
-    */
+     * Generate the complete login URL based on parameters and base
+     */
     private func generateUrl() -> URL? {
         var urlComponents = URLComponents(string: loginBaseUrl)
         urlComponents?.path = "/authorize"
@@ -265,9 +263,9 @@ public struct Constants {
     }
 
     /**
-    * Generate a verifier code for PKCE challenge (rfc7636 4.1.)
-    * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
-    */
+     * Generate a verifier code for PKCE challenge (rfc7636 4.1.)
+     * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
+     */
     private func generateCodeVerifier() -> String {
         var buffer = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
@@ -279,9 +277,9 @@ public struct Constants {
     }
 
     /**
-    * Generate a challenge code for PKCE challenge (rfc7636 4.2.)
-    * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
-    */
+     * Generate a challenge code for PKCE challenge (rfc7636 4.2.)
+     * https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
+     */
     private func generateCodeChallenge(codeVerifier: String) -> String {
         guard let data = codeVerifier.data(using: .utf8) else {
             return ""
@@ -298,7 +296,6 @@ public struct Constants {
             .replacingOccurrences(of: "=", with: "")
             .trimmingCharacters(in: .whitespaces)
     }
-
 }
 
 extension HTTPURLResponse {
@@ -314,8 +311,8 @@ extension Dictionary {
             let escapedValue = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
             return escapedKey + "=" + escapedValue
         }
-            .joined(separator: "&")
-            .data(using: .utf8)
+        .joined(separator: "&")
+        .data(using: .utf8)
     }
 }
 
