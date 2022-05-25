@@ -91,7 +91,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
 
                              onFailure: { error in
                                  instance.safariViewController?.dismiss(animated: true) {
-                                     instance.delegate?.didFailLoginWith(error: error)
+                                     instance.delegate?.didFailLoginWith(error: error.localizedDescription)
                                  }
                              })
     }
@@ -106,25 +106,24 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
 
                              onFailure: { error in
                                  instance.webViewController?.dismiss(animated: true) {
-                                     instance.delegate?.didFailLoginWith(error: error)
+                                     instance.delegate?.didFailLoginWith(error: error.localizedDescription)
                                  }
                              })
     }
 
-    @objc static func checkResponse(url: URL, onSuccess: (String) -> Void, onFailure: (String) -> Void) -> Bool {
+    static func checkResponse(url: URL, onSuccess: (String) -> Void, onFailure: (InfomaniakLoginError) -> Void) -> Bool {
         if let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value {
             onSuccess(code)
             return true
         } else {
-            onFailure("Accès refusé")
+            onFailure(.accessDenied)
             return false
         }
     }
 
     @available(iOS 13.0, *)
-    @objc public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(), useEphemeralSession: Bool = false, delegate: InfomaniakLoginDelegate? = nil) {
+    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(), useEphemeralSession: Bool = false, completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void) {
         let instance = InfomaniakLogin.instance
-        instance.delegate = delegate
         instance.generatePkceCodes()
 
         guard let loginUrl = instance.generateUrl(),
@@ -137,19 +136,33 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
             if let callbackURL = callbackURL {
                 _ = checkResponse(url: callbackURL,
                                   onSuccess: { code in
-                                      instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
+                                      completion(.success((code: code, verifier: instance.codeVerifier)))
                                   },
                                   onFailure: { error in
-                                      instance.delegate?.didFailLoginWith(error: error)
+                                      completion(.failure(error))
                                   })
             } else if let error = error {
-                instance.delegate?.didFailLoginWith(error: error.localizedDescription)
+                completion(.failure(error))
             }
         }
         instance.asPresentationContext = PresentationContext(anchor: anchor)
         session.presentationContextProvider = instance.asPresentationContext
         session.prefersEphemeralWebBrowserSession = useEphemeralSession
         session.start()
+    }
+
+    @available(iOS 13.0, *)
+    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(), useEphemeralSession: Bool = false, delegate: InfomaniakLoginDelegate? = nil) {
+        let instance = InfomaniakLogin.instance
+        instance.delegate = delegate
+        asWebAuthenticationLoginFrom(anchor: anchor, useEphemeralSession: useEphemeralSession) { result in
+            switch result {
+            case .success(let result):
+                instance.delegate?.didCompleteLoginWith(code: result.code, verifier: result.verifier)
+            case .failure(let error):
+                instance.delegate?.didFailLoginWith(error: error.localizedDescription)
+            }
+        }
     }
 
     @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
