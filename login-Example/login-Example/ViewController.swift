@@ -18,8 +18,8 @@ import InfomaniakLogin
 import UIKit
 
 class ViewController: UIViewController, InfomaniakLoginDelegate {
-    func didFailLoginWith(error: String) {
-        showError(error: error)
+    func didFailLoginWith(error: Error) {
+        showError(error: error.localizedDescription)
     }
 
     func didCompleteLoginWith(code: String, verifier: String) {
@@ -61,7 +61,7 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
     func showError(error: String) {
         let alertController = UIAlertController(title: error, message:
             nil, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "Fermer", style: .default, handler: {
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: {
             _ in
             self.dismiss(animated: true, completion: nil)
         }))

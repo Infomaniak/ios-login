@@ -20,9 +20,9 @@ import SafariServices
 import UIKit
 import WebKit
 
-@objc public protocol InfomaniakLoginDelegate {
+public protocol InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String)
-    func didFailLoginWith(error: String)
+    func didFailLoginWith(error: Error)
 }
 
 public enum Constants {
@@ -44,7 +44,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
     }
 }
 
-@objc public class InfomaniakLogin: NSObject {
+public class InfomaniakLogin {
     private static let LOGIN_API_URL = "https://login.infomaniak.com/"
     private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
 
@@ -71,17 +71,17 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
     private var webviewNavbarTitleColor: UIColor?
     private var webviewTimeOutMessage: String?
 
-    override private init() {}
+    private init() {}
 
-    @objc public static func initWith(clientId: String,
-                                      loginUrl: String = Constants.LOGIN_URL,
-                                      redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
+    public static func initWith(clientId: String,
+                                loginUrl: String = Constants.LOGIN_URL,
+                                redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
         instance.loginBaseUrl = loginUrl
         instance.clientId = clientId
         instance.redirectUri = redirectUri
     }
 
-    @objc public static func handleRedirectUri(url: URL) -> Bool {
+    public static func handleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
                              onSuccess: { code in
                                  instance.safariViewController?.dismiss(animated: true) {
@@ -91,12 +91,12 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
 
                              onFailure: { error in
                                  instance.safariViewController?.dismiss(animated: true) {
-                                     instance.delegate?.didFailLoginWith(error: error.localizedDescription)
+                                     instance.delegate?.didFailLoginWith(error: error)
                                  }
                              })
     }
 
-    @objc static func webviewHandleRedirectUri(url: URL) -> Bool {
+    static func webviewHandleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
                              onSuccess: { code in
                                  instance.webViewController?.dismiss(animated: true) {
@@ -106,7 +106,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
 
                              onFailure: { error in
                                  instance.webViewController?.dismiss(animated: true) {
-                                     instance.delegate?.didFailLoginWith(error: error.localizedDescription)
+                                     instance.delegate?.didFailLoginWith(error: error)
                                  }
                              })
     }
@@ -160,12 +160,12 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
             case .success(let result):
                 instance.delegate?.didCompleteLoginWith(code: result.code, verifier: result.verifier)
             case .failure(let error):
-                instance.delegate?.didFailLoginWith(error: error.localizedDescription)
+                instance.delegate?.didFailLoginWith(error: error)
             }
         }
     }
 
-    @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
+    public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
@@ -178,7 +178,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
         viewController.present(instance.safariViewController!, animated: true)
     }
 
-    @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
+    public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
@@ -207,7 +207,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
         instance.webViewController?.timeOutMessage = instance.webviewTimeOutMessage
     }
 
-    @objc public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false, timeOutMessage: String?) {
+    public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false, timeOutMessage: String?) {
         instance.webviewNavbarTitle = title
         instance.webviewNavbarTitleColor = titleColor
         instance.webviewNavbarColor = color
@@ -219,7 +219,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
     /**
      * Get an api token async (callback on background thread)
      */
-    @objc public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
+    public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
         let parameterDictionary: [String: Any] = [
@@ -239,7 +239,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
     /**
      * Get an api token async from an application password (callback on background thread)
      */
-    @objc public static func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
+    public static func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
         let parameterDictionary: [String: Any] = [
@@ -259,7 +259,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
     /**
      * Refresh api token async (callback on background thread)
      */
-    @objc public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
+    public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
         let parameterDictionary: [String: Any] = [
