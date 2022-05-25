@@ -71,7 +71,9 @@ public class InfomaniakLogin {
     private var webviewNavbarTitleColor: UIColor?
     private var webviewTimeOutMessage: String?
 
-    private init() {}
+    private init() {
+        // Singleton
+    }
 
     public static func initWith(clientId: String,
                                 loginUrl: String = Constants.LOGIN_URL,
