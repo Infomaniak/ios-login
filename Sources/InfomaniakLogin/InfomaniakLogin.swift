@@ -14,6 +14,7 @@
  limitations under the License.
  */
 
+import AuthenticationServices
 import CommonCrypto
 import SafariServices
 import UIKit
@@ -32,6 +33,17 @@ public enum Constants {
     public static let HASH_MODE_SHORT = "S256"
 }
 
+class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProviding {
+    private let anchor: ASPresentationAnchor
+    init(anchor: ASPresentationAnchor) {
+        self.anchor = anchor
+    }
+
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        return anchor
+    }
+}
+
 @objc public class InfomaniakLogin: NSObject {
     private static let LOGIN_API_URL = "https://login.infomaniak.com/"
     private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
@@ -47,9 +59,11 @@ public enum Constants {
     private var codeChallengeMethod: String!
     private var codeVerifier: String!
 
+    private var asPresentationContext: PresentationContext?
+
     private var safariViewController: SFSafariViewController?
 
-    private var clearCookie: Bool? = false
+    private var clearCookie = false
     private var webViewController: WebViewController?
     private var webviewNavbarButtonColor: UIColor?
     private var webviewNavbarColor: UIColor?
@@ -105,6 +119,37 @@ public enum Constants {
             onFailure("Accès refusé")
             return false
         }
+    }
+
+    @available(iOS 13.0, *)
+    @objc public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(), useEphemeralSession: Bool = false, delegate: InfomaniakLoginDelegate? = nil) {
+        let instance = InfomaniakLogin.instance
+        instance.delegate = delegate
+        instance.generatePkceCodes()
+
+        guard let loginUrl = instance.generateUrl(),
+              let callbackUrl = URL(string: instance.redirectUri),
+              let callbackUrlScheme = callbackUrl.scheme else {
+            return
+        }
+
+        let session = ASWebAuthenticationSession(url: loginUrl, callbackURLScheme: callbackUrlScheme) { callbackURL, error in
+            if let callbackURL = callbackURL {
+                _ = checkResponse(url: callbackURL,
+                                  onSuccess: { code in
+                                      instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
+                                  },
+                                  onFailure: { error in
+                                      instance.delegate?.didFailLoginWith(error: error)
+                                  })
+            } else if let error = error {
+                instance.delegate?.didFailLoginWith(error: error.localizedDescription)
+            }
+        }
+        instance.asPresentationContext = PresentationContext(anchor: anchor)
+        session.presentationContextProvider = instance.asPresentationContext
+        session.prefersEphemeralWebBrowserSession = useEphemeralSession
+        session.start()
     }
 
     @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
