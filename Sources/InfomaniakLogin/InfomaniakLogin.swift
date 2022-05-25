@@ -14,14 +14,15 @@
  limitations under the License.
  */
 
+import AuthenticationServices
 import CommonCrypto
 import SafariServices
 import UIKit
 import WebKit
 
-@objc public protocol InfomaniakLoginDelegate {
+public protocol InfomaniakLoginDelegate: AnyObject {
     func didCompleteLoginWith(code: String, verifier: String)
-    func didFailLoginWith(error: String)
+    func didFailLoginWith(error: Error)
 }
 
 public enum Constants {
@@ -32,7 +33,18 @@ public enum Constants {
     public static let HASH_MODE_SHORT = "S256"
 }
 
-@objc public class InfomaniakLogin: NSObject {
+class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProviding {
+    private let anchor: ASPresentationAnchor
+    init(anchor: ASPresentationAnchor) {
+        self.anchor = anchor
+    }
+
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        return anchor
+    }
+}
+
+public class InfomaniakLogin {
     private static let LOGIN_API_URL = "https://login.infomaniak.com/"
     private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
 
@@ -47,9 +59,11 @@ public enum Constants {
     private var codeChallengeMethod: String!
     private var codeVerifier: String!
 
+    private var asPresentationContext: PresentationContext?
+
     private var safariViewController: SFSafariViewController?
 
-    private var clearCookie: Bool? = false
+    private var clearCookie = false
     private var webViewController: WebViewController?
     private var webviewNavbarButtonColor: UIColor?
     private var webviewNavbarColor: UIColor?
@@ -57,17 +71,19 @@ public enum Constants {
     private var webviewNavbarTitleColor: UIColor?
     private var webviewTimeOutMessage: String?
 
-    override private init() {}
+    private init() {
+        // Singleton
+    }
 
-    @objc public static func initWith(clientId: String,
-                                      loginUrl: String = Constants.LOGIN_URL,
-                                      redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
+    public static func initWith(clientId: String,
+                                loginUrl: String = Constants.LOGIN_URL,
+                                redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
         instance.loginBaseUrl = loginUrl
         instance.clientId = clientId
         instance.redirectUri = redirectUri
     }
 
-    @objc public static func handleRedirectUri(url: URL) -> Bool {
+    public static func handleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
                              onSuccess: { code in
                                  instance.safariViewController?.dismiss(animated: true) {
@@ -82,7 +98,7 @@ public enum Constants {
                              })
     }
 
-    @objc static func webviewHandleRedirectUri(url: URL) -> Bool {
+    static func webviewHandleRedirectUri(url: URL) -> Bool {
         return checkResponse(url: url,
                              onSuccess: { code in
                                  instance.webViewController?.dismiss(animated: true) {
@@ -97,17 +113,61 @@ public enum Constants {
                              })
     }
 
-    @objc static func checkResponse(url: URL, onSuccess: (String) -> Void, onFailure: (String) -> Void) -> Bool {
+    static func checkResponse(url: URL, onSuccess: (String) -> Void, onFailure: (InfomaniakLoginError) -> Void) -> Bool {
         if let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value {
             onSuccess(code)
             return true
         } else {
-            onFailure("Accès refusé")
+            onFailure(.accessDenied)
             return false
         }
     }
 
-    @objc public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
+    @available(iOS 13.0, *)
+    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(), useEphemeralSession: Bool = false, completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void) {
+        let instance = InfomaniakLogin.instance
+        instance.generatePkceCodes()
+
+        guard let loginUrl = instance.generateUrl(),
+              let callbackUrl = URL(string: instance.redirectUri),
+              let callbackUrlScheme = callbackUrl.scheme else {
+            return
+        }
+
+        let session = ASWebAuthenticationSession(url: loginUrl, callbackURLScheme: callbackUrlScheme) { callbackURL, error in
+            if let callbackURL = callbackURL {
+                _ = checkResponse(url: callbackURL,
+                                  onSuccess: { code in
+                                      completion(.success((code: code, verifier: instance.codeVerifier)))
+                                  },
+                                  onFailure: { error in
+                                      completion(.failure(error))
+                                  })
+            } else if let error = error {
+                completion(.failure(error))
+            }
+        }
+        instance.asPresentationContext = PresentationContext(anchor: anchor)
+        session.presentationContextProvider = instance.asPresentationContext
+        session.prefersEphemeralWebBrowserSession = useEphemeralSession
+        session.start()
+    }
+
+    @available(iOS 13.0, *)
+    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(), useEphemeralSession: Bool = false, delegate: InfomaniakLoginDelegate? = nil) {
+        let instance = InfomaniakLogin.instance
+        instance.delegate = delegate
+        asWebAuthenticationLoginFrom(anchor: anchor, useEphemeralSession: useEphemeralSession) { result in
+            switch result {
+            case .success(let result):
+                instance.delegate?.didCompleteLoginWith(code: result.code, verifier: result.verifier)
+            case .failure(let error):
+                instance.delegate?.didFailLoginWith(error: error)
+            }
+        }
+    }
+
+    public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
@@ -120,7 +180,7 @@ public enum Constants {
         viewController.present(instance.safariViewController!, animated: true)
     }
 
-    @objc public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
+    public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
         instance.generatePkceCodes()
@@ -149,7 +209,7 @@ public enum Constants {
         instance.webViewController?.timeOutMessage = instance.webviewTimeOutMessage
     }
 
-    @objc public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false, timeOutMessage: String?) {
+    public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false, timeOutMessage: String?) {
         instance.webviewNavbarTitle = title
         instance.webviewNavbarTitleColor = titleColor
         instance.webviewNavbarColor = color
@@ -161,7 +221,7 @@ public enum Constants {
     /**
      * Get an api token async (callback on background thread)
      */
-    @objc public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
+    public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
         let parameterDictionary: [String: Any] = [
@@ -181,7 +241,7 @@ public enum Constants {
     /**
      * Get an api token async from an application password (callback on background thread)
      */
-    @objc public static func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
+    public static func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
         let parameterDictionary: [String: Any] = [
@@ -201,7 +261,7 @@ public enum Constants {
     /**
      * Refresh api token async (callback on background thread)
      */
-    @objc public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
+    public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
         var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
 
         let parameterDictionary: [String: Any] = [
