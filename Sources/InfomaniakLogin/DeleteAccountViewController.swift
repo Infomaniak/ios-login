@@ -25,20 +25,13 @@ public class DeleteAccountViewController: UIViewController {
     public var accessToken: String?
 
     public override func loadView() {
-        let webConfiguration = WKWebViewConfiguration()
-        webView = WKWebView(frame: .zero, configuration: webConfiguration)
-        webView.navigationDelegate = self
-        webView.scrollView.contentInsetAdjustmentBehavior = .never
-        view = webView
-
-        progressView = UIProgressView(progressViewStyle: .default)
+        setUpWebview()
+        setupNavBar()
+        setupProgressView()
     }
 
     public override func viewDidLoad() {
         super.viewDidLoad()
-
-        setupNavBar()
-        setupProgressView()
 
         if let url = Constants.autologinUrl(to: Constants.DELETEACCOUNT_URL) {
             if let accessToken = accessToken {
@@ -90,6 +83,7 @@ public class DeleteAccountViewController: UIViewController {
     private func setupProgressView() {
         guard let navigationBar = navigationController?.navigationBar else { return }
 
+        progressView = UIProgressView(progressViewStyle: .default)
         progressView.translatesAutoresizingMaskIntoConstraints = false
         navigationBar.addSubview(progressView)
 
@@ -107,6 +101,15 @@ public class DeleteAccountViewController: UIViewController {
             self?.progressView.isHidden = newValue == 1
             self?.progressView.setProgress(Float(newValue), animated: true)
         }
+    }
+
+    private func setUpWebview() {
+        let webConfiguration = WKWebViewConfiguration()
+        webView = WKWebView(frame: .zero, configuration: webConfiguration)
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.navigationDelegate = self
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        view = webView
     }
 
     @objc func close() {
