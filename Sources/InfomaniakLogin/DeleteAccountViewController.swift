@@ -27,7 +27,7 @@ public class DeleteAccountViewController: UIViewController {
 
     public override func loadView() {
         super.loadView()
-        setUpWebview()
+        setupWebView()
         setupNavBar()
         setupProgressView()
     }
@@ -50,7 +50,7 @@ public class DeleteAccountViewController: UIViewController {
         }
     }
 
-    public static func instantiateInViewController(delegate: DeleteAccountDelegate? = nil, accessToken: String, navBarColor: UIColor? = nil, navBarButtonColor: UIColor? = nil) -> UINavigationController {
+    public static func instantiateInViewController(delegate: DeleteAccountDelegate? = nil, accessToken: String?, navBarColor: UIColor? = nil, navBarButtonColor: UIColor? = nil) -> UINavigationController {
         let deleteAccountViewController = DeleteAccountViewController()
         deleteAccountViewController.delegate = delegate
         deleteAccountViewController.accessToken = accessToken
@@ -69,10 +69,8 @@ public class DeleteAccountViewController: UIViewController {
                 navigationAppearance.backgroundColor = navBarColor
             }
             self.navigationController?.navigationBar.standardAppearance = navigationAppearance
-        } else {
-            if let navBarColor = navBarColor {
-                self.navigationController?.navigationBar.backgroundColor = navBarColor
-            }
+        } else if let navBarColor = navBarColor {
+            self.navigationController?.navigationBar.backgroundColor = navBarColor
         }
 
         let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(self.close))
@@ -105,7 +103,7 @@ public class DeleteAccountViewController: UIViewController {
         }
     }
 
-    private func setUpWebview() {
+    private func setupWebView() {
         let webConfiguration = WKWebViewConfiguration()
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.translatesAutoresizingMaskIntoConstraints = false
@@ -118,11 +116,13 @@ public class DeleteAccountViewController: UIViewController {
     }
 }
 
+// MARK: - WKNavigationDelegate
+
 extension DeleteAccountViewController: WKNavigationDelegate {
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if let url = navigationAction.request.url {
             let urlString = url.absoluteString
-            if urlString.starts(with: "https://login.infomaniak.com") {
+            if urlString.starts(with: Constants.LOGIN_URL) {
                 decisionHandler(.allow)
                 dismiss(animated: true)
                 if !accountDeleted {
@@ -131,7 +131,8 @@ extension DeleteAccountViewController: WKNavigationDelegate {
                 }
                 return
             }
-            if urlString.contains("infomaniak.com") {
+            // Sometimes login redirects to about:blank
+            if urlString.contains("infomaniak.com") || urlString.contains("about:blank") {
                 decisionHandler(.allow)
                 return
             }
