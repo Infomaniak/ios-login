@@ -27,14 +27,14 @@ public protocol InfomaniakLoginDelegate: AnyObject {
 
 public enum Constants {
     public static let LOGIN_URL = "https://login.infomaniak.com/"
-    public static let DELETEACCOUNT_URL = "https://manager.preprod.dev.infomaniak.ch/v3/ng/profile/user/dashboard?open-terminate-account-modal"
+    public static let DELETEACCOUNT_URL = "https://manager.infomaniak.com/v3/ng/profile/user/dashboard?open-terminate-account-modal"
     public static let RESPONSE_TYPE = "code"
     public static let ACCESS_TYPE = "offline"
     public static let HASH_MODE = "SHA-256"
     public static let HASH_MODE_SHORT = "S256"
 
     public static func autologinUrl(to destination: String) -> URL? {
-        return URL(string: "https://manager.preprod.dev.infomaniak.ch/v3/mobile_login/?url=\(destination)")
+        return URL(string: "https://manager.infomaniak.com/v3/mobile_login/?url=\(destination)")
     }
 }
 

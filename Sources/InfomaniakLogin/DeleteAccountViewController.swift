@@ -20,11 +20,13 @@ public class DeleteAccountViewController: UIViewController {
     public var navBarButtonColor: UIColor?
 
     private var progressObserver: NSKeyValueObservation?
+    private var accountDeleted = false
 
     public weak var delegate: DeleteAccountDelegate?
     public var accessToken: String?
 
     public override func loadView() {
+        super.loadView()
         setUpWebview()
         setupNavBar()
         setupProgressView()
@@ -108,7 +110,6 @@ public class DeleteAccountViewController: UIViewController {
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.navigationDelegate = self
-        webView.scrollView.contentInsetAdjustmentBehavior = .never
         view = webView
     }
 
@@ -122,12 +123,15 @@ extension DeleteAccountViewController: WKNavigationDelegate {
         if let url = navigationAction.request.url {
             let urlString = url.absoluteString
             if urlString.starts(with: "https://login.infomaniak.com") {
-                delegate?.didCompleteDeleteAccount()
                 decisionHandler(.allow)
                 dismiss(animated: true)
+                if !accountDeleted {
+                    delegate?.didCompleteDeleteAccount()
+                    accountDeleted = true
+                }
                 return
             }
-            if urlString.contains("infomaniak.ch") {
+            if urlString.contains("infomaniak.com") {
                 decisionHandler(.allow)
                 return
             }
