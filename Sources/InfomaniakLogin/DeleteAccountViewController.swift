@@ -19,7 +19,7 @@ import WebKit
 
 public protocol DeleteAccountDelegate: AnyObject {
     func didCompleteDeleteAccount()
-    func didFailDeleteAccount(context: [String: Any]?)
+    func didFailDeleteAccount(error: InfomaniakLoginError)
 }
 
 public class DeleteAccountViewController: UIViewController {
@@ -50,11 +50,11 @@ public class DeleteAccountViewController: UIViewController {
                 request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
                 webView.load(request)
             } else {
-                delegate?.didFailDeleteAccount(context: nil)
+                delegate?.didFailDeleteAccount(error: .invalidAccessToken(accessToken))
                 dismiss(animated: true)
             }
         } else {
-            delegate?.didFailDeleteAccount(context: ["URL": "nil"])
+            delegate?.didFailDeleteAccount(error: .invalidUrl)
             dismiss(animated: true)
         }
     }
@@ -148,7 +148,7 @@ extension DeleteAccountViewController: WKNavigationDelegate {
         }
 
         decisionHandler(.cancel)
-        delegate?.didFailDeleteAccount(context: nil)
+        delegate?.didFailDeleteAccount(error: .navigationCancelled(nil, nil))
         dismiss(animated: true)
     }
 
@@ -162,17 +162,13 @@ extension DeleteAccountViewController: WKNavigationDelegate {
             decisionHandler(.allow)
         } else {
             decisionHandler(.cancel)
-            let context: [String: Any] = [
-                "URL": navigationResponse.response.url?.absoluteString ?? "",
-                "Status code": statusCode
-            ]
-            delegate?.didFailDeleteAccount(context: context)
+            delegate?.didFailDeleteAccount(error: .navigationCancelled(statusCode, navigationResponse.response.url))
             dismiss(animated: true)
         }
     }
 
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        delegate?.didFailDeleteAccount(context: ["Error": error.localizedDescription])
+        delegate?.didFailDeleteAccount(error: .navigationFailed(error))
         dismiss(animated: true)
     }
 }

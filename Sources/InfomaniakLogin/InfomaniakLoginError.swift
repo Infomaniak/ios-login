@@ -17,12 +17,27 @@
 import Foundation
 
 public enum InfomaniakLoginError: LocalizedError {
+    public typealias HTTPStatusCode = Int
+    public typealias AccessToken = String
+
     case accessDenied
+    case navigationFailed(Error)
+    case navigationCancelled(HTTPStatusCode?, URL?)
+    case invalidAccessToken(AccessToken?)
+    case invalidUrl
 
     public var errorDescription: String? {
         switch self {
         case .accessDenied:
             return "Access denied"
+        case .navigationFailed:
+            return "Navigation failed"
+        case .navigationCancelled:
+            return "Navigation cancelled"
+        case .invalidAccessToken:
+            return "Invalid access token"
+        case .invalidUrl:
+            return "Invalid url"
         }
     }
 }
