@@ -21,8 +21,8 @@ import InfomaniakLogin
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        let clientId = "1d06ddb8-65d7-4e45-a1b1-276f5da71833"
-        let redirectUri = "com.infomaniak.auth://oauth2redirect"
+        let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+        let redirectUri = "com.infomaniak.drive://oauth2redirect"
 
         InfomaniakLogin.initWith(clientId: clientId, redirectUri: redirectUri)
         return true

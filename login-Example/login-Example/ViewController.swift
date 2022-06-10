@@ -17,27 +17,55 @@
 import InfomaniakLogin
 import UIKit
 
-class ViewController: UIViewController, InfomaniakLoginDelegate {
+class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDelegate {
+    func didCompleteDeleteAccount() {
+        showAlert(title: "Account deleted", message: nil)
+    }
+
+    func didFailDeleteAccount(error: InfomaniakLoginError) {
+        showAlert(title: "Delete Account Failed", message: error.localizedDescription)
+    }
+
     func didFailLoginWith(error: Error) {
-        showError(error: error.localizedDescription)
+        showAlert(title: "Login Failed", message: error.localizedDescription)
     }
 
     func didCompleteLoginWith(code: String, verifier: String) {
         InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { token, error in
-            var alertViewController: UIAlertController?
+            var title: String?
+            var description: String?
+
             if let token = token {
-                alertViewController = UIAlertController(title: "Login completed",
-                                                        message: "UserId: \(token.userId)\nToken: \(token.accessToken)",
-                                                        preferredStyle: .alert)
+                title = "Login completed"
+                description = "UserId: \(token.userId)\nToken: \(token.accessToken)"
             } else if let error = error {
-                alertViewController = UIAlertController(title: "Login error",
-                                                        message: error.localizedDescription,
-                                                        preferredStyle: .alert)
+                title = "Login error"
+                description = error.localizedDescription
             }
-            if let alertViewController = alertViewController {
+            if let title = title,
+               let description = description {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    alertViewController.addAction(UIAlertAction(title: "OK", style: .default))
-                    self.present(alertViewController, animated: true)
+                    self.showAlert(title: title, message: description)
+                }
+            }
+        }
+    }
+
+    @IBAction func deleteAccount(_ sender: Any) {
+        if #available(iOS 13.0, *) {
+            InfomaniakLogin.asWebAuthenticationLoginFrom(useEphemeralSession: true) { result in
+                switch result {
+                case .success((let code, let verifier)):
+                    InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { token, _ in
+                        if let token = token {
+                            DispatchQueue.main.async {
+                                let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(delegate: self, accessToken: token.accessToken)
+                                self.present(deleteAccountViewController, animated: true)
+                            }
+                        }
+                    }
+                case .failure:
+                    break
                 }
             }
         }
@@ -58,13 +86,11 @@ class ViewController: UIViewController, InfomaniakLoginDelegate {
         }
     }
 
-    func showError(error: String) {
-        let alertController = UIAlertController(title: error, message:
-            nil, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: {
-            _ in
+    func showAlert(title: String, message: String?) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
             self.dismiss(animated: true, completion: nil)
-        }))
+        })
         present(alertController, animated: true, completion: nil)
     }
 }
