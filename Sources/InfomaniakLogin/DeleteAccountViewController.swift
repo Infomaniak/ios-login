@@ -1,18 +1,18 @@
 /*
-Copyright 2020 Infomaniak Network SA
+ Copyright 2020 Infomaniak Network SA
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
 
 import UIKit
 import WebKit
@@ -34,14 +34,14 @@ public class DeleteAccountViewController: UIViewController {
     public weak var delegate: DeleteAccountDelegate?
     public var accessToken: String?
 
-    public override func loadView() {
+    override public func loadView() {
         super.loadView()
         setupWebView()
         setupNavBar()
         setupProgressView()
     }
 
-    public override func viewDidLoad() {
+    override public func viewDidLoad() {
         super.viewDidLoad()
 
         if let url = Constants.autologinUrl(to: Constants.DELETEACCOUNT_URL) {
@@ -54,7 +54,7 @@ public class DeleteAccountViewController: UIViewController {
                 dismiss(animated: true)
             }
         } else {
-            delegate?.didFailDeleteAccount(context: ["URL" : "nil"])
+            delegate?.didFailDeleteAccount(context: ["URL": "nil"])
             dismiss(animated: true)
         }
     }
@@ -79,14 +79,14 @@ public class DeleteAccountViewController: UIViewController {
             }
             self.navigationController?.navigationBar.standardAppearance = navigationAppearance
         } else if let navBarColor = navBarColor {
-            self.navigationController?.navigationBar.backgroundColor = navBarColor
+            navigationController?.navigationBar.backgroundColor = navBarColor
         }
 
-        let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(self.close))
+        let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(close))
         if let navBarButtonColor = navBarButtonColor {
             backButton.tintColor = navBarButtonColor
         }
-        self.navigationItem.leftBarButtonItem = backButton
+        navigationItem.leftBarButtonItem = backButton
     }
 
     private func setupProgressView() {
@@ -121,7 +121,7 @@ public class DeleteAccountViewController: UIViewController {
     }
 
     @objc func close() {
-        self.dismiss(animated: true)
+        dismiss(animated: true)
     }
 }
 
@@ -170,7 +170,6 @@ extension DeleteAccountViewController: WKNavigationDelegate {
             dismiss(animated: true)
         }
     }
-
 
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         delegate?.didFailDeleteAccount(context: ["Error": error.localizedDescription])
