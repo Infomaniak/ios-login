@@ -289,8 +289,13 @@ public class InfomaniakLogin {
         request.addValue("Bearer \(token.accessToken)", forHTTPHeaderField: "Authorization")
         request.httpMethod = "DELETE"
 
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let response = response as? HTTPURLResponse, let data else { return }
+        URLSession.shared.dataTask(with: request) { data, response, sessionError in
+            guard let response = response as? HTTPURLResponse, let data else {
+                if let sessionError {
+                    onError(sessionError)
+                }
+                return
+            }
 
             do {
                 if !response.isSuccessful() {
