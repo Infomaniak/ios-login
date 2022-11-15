@@ -284,7 +284,7 @@ public class InfomaniakLogin {
     /**
      * Delete an api token async
      */
-    public static func deleteApiToken(token: ApiToken, completion: @escaping (Error?) -> Void) {
+    public static func deleteApiToken(token: ApiToken, onError: @escaping (Error) -> Void) {
         var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
         request.addValue("Bearer \(token.accessToken)", forHTTPHeaderField: "Authorization")
         request.httpMethod = "DELETE"
@@ -293,14 +293,12 @@ public class InfomaniakLogin {
             guard let response = response as? HTTPURLResponse, let data else { return }
 
             do {
-                if response.isSuccessful() {
-                    completion(nil)
-                } else {
+                if !response.isSuccessful() {
                     let apiDeleteToken = try JSONDecoder().decode(ApiDeleteToken.self, from: data)
-                    completion(NSError(domain: apiDeleteToken.error!, code: response.statusCode, userInfo: ["Error": apiDeleteToken.error!]))
+                    onError(NSError(domain: apiDeleteToken.error!, code: response.statusCode, userInfo: ["Error": apiDeleteToken.error!]))
                 }
             } catch {
-                completion(error)
+                onError(error)
             }
         }.resume()
     }
