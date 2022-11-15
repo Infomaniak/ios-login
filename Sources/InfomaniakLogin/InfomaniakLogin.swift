@@ -281,6 +281,30 @@ public class InfomaniakLogin {
         getApiToken(request: request, completion: completion)
     }
 
+    /**
+     * Delete an api token async
+     */
+    public static func deleteApiToken(token: ApiToken, completion: @escaping (Error?) -> Void) {
+        var request = URLRequest(url: URL(string: GET_TOKEN_API_URL)!)
+        request.addValue("Bearer \(token.accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpMethod = "DELETE"
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let response = response as? HTTPURLResponse, let data else { return }
+
+            do {
+                if response.isSuccessful() {
+                    completion(nil)
+                } else {
+                    let apiDeleteToken = try JSONDecoder().decode(ApiDeleteToken.self, from: data)
+                    completion(NSError(domain: apiDeleteToken.error!, code: response.statusCode, userInfo: ["Error": apiDeleteToken.error!]))
+                }
+            } catch {
+                completion(error)
+            }
+        }.resume()
+    }
+
     private static func getApiToken(request: URLRequest, completion: @escaping (ApiToken?, Error?) -> Void) {
         let session = URLSession.shared
         session.dataTask(with: request) { data, response, sessionError in
