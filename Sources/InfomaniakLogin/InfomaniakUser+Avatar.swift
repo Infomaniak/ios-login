@@ -16,11 +16,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakCore
 import InfomaniakCoreUI
 import Kingfisher
 import UIKit
 
-public extension InfomaniakUser {
+public extension InfomaniakCore.InfomaniakUser {
     /// Can fetch an avatar from any abstract `InfomaniakUser`
     func getAvatar(size: CGSize = CGSize(width: 40, height: 40), completion: @escaping (UIImage) -> Void) {
         if let url = URL(string: avatar) {

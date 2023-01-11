@@ -41,7 +41,8 @@ public class InfomaniakLogin {
     private static let LOGIN_API_URL = "https://login.infomaniak.com/"
     private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
 
-    private static let instance = InfomaniakNetworkLogin()
+    private static let instance = InfomaniakLogin()
+    
     private var delegate: InfomaniakLoginDelegate?
 
     private var clientId: String!
@@ -215,29 +216,24 @@ public class InfomaniakLogin {
 
     /// Get an api token async (callback on background thread)
     public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
-        instance.getApiTokenUsing(code: code, codeVerifier: codeVerifier, completion: completion)
+        InfomaniakNetworkLogin.getApiTokenUsing(code: code, codeVerifier: codeVerifier, completion: completion)
     }
 
     /// Get an api token async from an application password (callback on background thread)
     public static func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
-        instance.getApiToken(username: username, applicationPassword: applicationPassword, completion: completion)
+        InfomaniakNetworkLogin.getApiToken(username: username, applicationPassword: applicationPassword, completion: completion)
     }
 
     /// Refresh api token async (callback on background thread)
     public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
-        instance.refreshToken(token: token, completion: completion)
+        InfomaniakNetworkLogin.refreshToken(token: token, completion: completion)
     }
 
     /// Delete an api token async
     public static func deleteApiToken(token: ApiToken, onError: @escaping (Error) -> Void) {
-        instance.deleteApiToken(token: token, onError: onError)
+        InfomaniakNetworkLogin.deleteApiToken(token: token, onError: onError)
     }
-
-    /// Make the get token network call
-    private static func getApiToken(request: URLRequest, completion: @escaping (ApiToken?, Error?) -> Void) {
-        instance.getApiToken(request: request, completion: completion)
-    }
-
+    
     private func generatePkceCodes() {
         codeChallengeMethod = Constants.HASH_MODE_SHORT
         codeVerifier = generateCodeVerifier()
