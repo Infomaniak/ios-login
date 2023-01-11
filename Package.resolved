@@ -1,0 +1,61 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Alamofire",
+        "repositoryURL": "https://github.com/Alamofire/Alamofire",
+        "state": {
+          "branch": null,
+          "revision": "78424be314842833c04bc3bef5b72e85fff99204",
+          "version": "5.6.4"
+        }
+      },
+      {
+        "package": "InfomaniakCore",
+        "repositoryURL": "https://github.com/Infomaniak/ios-core.git",
+        "state": {
+          "branch": null,
+          "revision": "ac0f01becdfbd30d5435e35892c345d49e548f7b",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "Kingfisher",
+        "repositoryURL": "https://github.com/onevcat/Kingfisher",
+        "state": {
+          "branch": null,
+          "revision": "90135885ef506506620c4911cefb55a95ca2a9a2",
+          "version": "7.5.0"
+        }
+      },
+      {
+        "package": "RealmDatabase",
+        "repositoryURL": "https://github.com/realm/realm-core.git",
+        "state": {
+          "branch": null,
+          "revision": "b77443ca7fa25407869ca537bf3ae912b1427bff",
+          "version": "12.13.0"
+        }
+      },
+      {
+        "package": "Realm",
+        "repositoryURL": "https://github.com/realm/realm-swift",
+        "state": {
+          "branch": null,
+          "revision": "b442ee3e9caa1abab26fd9b23f060f6f0815ff48",
+          "version": "10.33.0"
+        }
+      },
+      {
+        "package": "Sentry",
+        "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
+        "state": {
+          "branch": null,
+          "revision": "cf43eac1aa12017868c257ad3854ad87a5de0758",
+          "version": "7.31.5"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
