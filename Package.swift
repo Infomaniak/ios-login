@@ -16,8 +16,6 @@ let package = Package(
         dependencies: [
             .package(name: "InfomaniakCoreUI", url: "https://github.com/Infomaniak/ios-core-ui.git", .upToNextMajor(from: "1.0.0")),
             .package(name: "InfomaniakCore", url: "https://github.com/Infomaniak/ios-core.git", .upToNextMajor(from: "2.0.1")),
-            .package(url: "https://github.com/Alamofire/Alamofire", .upToNextMajor(from: "5.2.2")),
-            .package(url: "https://github.com/realm/realm-swift", .upToNextMajor(from: "10.0.0")),
         ],
         targets: [
             .target(
@@ -25,8 +23,6 @@ let package = Package(
                     dependencies: [
                         "InfomaniakCore",
                         "InfomaniakCoreUI",
-                        "Alamofire",
-                        .product(name: "RealmSwift", package: "realm-swift"),
                     ]),
             .testTarget(
                     name: "InfomaniakLoginTests",
