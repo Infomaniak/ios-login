@@ -58,6 +58,7 @@ public class InfomaniakLogin {
     private var safariViewController: SFSafariViewController?
 
     private var clearCookie = false
+    private var hideCreateAccountButton = true
     private var webViewController: WebViewController?
     private var webviewNavbarButtonColor: UIColor?
     private var webviewNavbarColor: UIColor?
@@ -118,8 +119,12 @@ public class InfomaniakLogin {
     }
 
     @available(iOS 13.0, *)
-    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(), useEphemeralSession: Bool = false, completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void) {
+    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
+                                                    useEphemeralSession: Bool = false,
+                                                    hideCreateAccountButton: Bool = true,
+                                                    completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void) {
         let instance = InfomaniakLogin.instance
+        instance.hideCreateAccountButton = hideCreateAccountButton
         instance.generatePkceCodes()
 
         guard let loginUrl = instance.generateUrl(),
@@ -148,10 +153,13 @@ public class InfomaniakLogin {
     }
 
     @available(iOS 13.0, *)
-    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(), useEphemeralSession: Bool = false, delegate: InfomaniakLoginDelegate? = nil) {
+    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
+                                                    useEphemeralSession: Bool = false,
+                                                    hideCreateAccountButton: Bool = true,
+                                                    delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
         instance.delegate = delegate
-        asWebAuthenticationLoginFrom(anchor: anchor, useEphemeralSession: useEphemeralSession) { result in
+        asWebAuthenticationLoginFrom(anchor: anchor, useEphemeralSession: useEphemeralSession, hideCreateAccountButton: hideCreateAccountButton) { result in
             switch result {
             case .success(let result):
                 instance.delegate?.didCompleteLoginWith(code: result.code, verifier: result.verifier)
@@ -161,8 +169,11 @@ public class InfomaniakLogin {
         }
     }
 
-    public static func loginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
+    public static func loginFrom(viewController: UIViewController,
+                                 hideCreateAccountButton: Bool = true,
+                                 delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
+        instance.hideCreateAccountButton = hideCreateAccountButton
         instance.delegate = delegate
         instance.generatePkceCodes()
 
@@ -174,8 +185,11 @@ public class InfomaniakLogin {
         viewController.present(instance.safariViewController!, animated: true)
     }
 
-    public static func webviewLoginFrom(viewController: UIViewController, delegate: InfomaniakLoginDelegate? = nil) {
+    public static func webviewLoginFrom(viewController: UIViewController,
+                                        hideCreateAccountButton: Bool = true,
+                                        delegate: InfomaniakLoginDelegate? = nil) {
         let instance = InfomaniakLogin.instance
+        instance.hideCreateAccountButton = hideCreateAccountButton
         instance.delegate = delegate
         instance.generatePkceCodes()
 
@@ -252,6 +266,9 @@ public class InfomaniakLogin {
             URLQueryItem(name: "code_challenge_method", value: codeChallengeMethod),
             URLQueryItem(name: "code_challenge", value: codeChallenge)
         ]
+        if hideCreateAccountButton {
+            urlComponents?.queryItems?.append(URLQueryItem(name: "hide_create_account", value: ""))
+        }
         return urlComponents?.url
     }
 
