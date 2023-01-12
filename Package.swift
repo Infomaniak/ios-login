@@ -14,15 +14,13 @@ let package = Package(
                     targets: ["InfomaniakLogin"]),
         ],
         dependencies: [
-            .package(name: "InfomaniakCoreUI", url: "https://github.com/Infomaniak/ios-core-ui.git", .upToNextMajor(from: "1.0.0")),
-            .package(name: "InfomaniakCore", url: "https://github.com/Infomaniak/ios-core.git", .upToNextMajor(from: "2.0.1")),
+            .package(url: "https://github.com/Infomaniak/ios-core-ui", .upToNextMajor(from: "1.1.0")),
         ],
         targets: [
             .target(
                     name: "InfomaniakLogin",
                     dependencies: [
-                        "InfomaniakCore",
-                        "InfomaniakCoreUI",
+                        .product(name: "InfomaniakCoreUI", package: "ios-core-ui"),
                     ]),
             .testTarget(
                     name: "InfomaniakLoginTests",
