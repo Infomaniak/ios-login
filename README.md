@@ -109,7 +109,7 @@ With these arguments:
 
 ## License
 
-    Copyright 2021 Infomaniak
+    Copyright 2023 Infomaniak
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
