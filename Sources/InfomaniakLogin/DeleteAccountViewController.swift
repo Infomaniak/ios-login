@@ -1,5 +1,5 @@
 /*
- Copyright 2020 Infomaniak Network SA
+ Copyright 2023 Infomaniak Network SA
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  limitations under the License.
  */
 
+import InfomaniakCoreUI
+import InfomaniakCore
 import UIKit
 import WebKit
 
