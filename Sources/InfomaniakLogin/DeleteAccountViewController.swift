@@ -14,6 +14,7 @@
  limitations under the License.
  */
 
+import InfomaniakCoreUI
 import InfomaniakCore
 import UIKit
 import WebKit
