@@ -42,6 +42,7 @@ public class InfomaniakLogin {
     private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
 
     private static let instance = InfomaniakLogin()
+    private var networkLogin: InfomaniakNetworkLogin!
     
     private var delegate: InfomaniakLoginDelegate?
 
@@ -76,6 +77,8 @@ public class InfomaniakLogin {
         instance.loginBaseUrl = loginUrl
         instance.clientId = clientId
         instance.redirectUri = redirectUri
+        InfomaniakNetworkLogin.initWith(clientId: clientId, loginUrl: loginUrl, redirectUri: redirectUri)
+        instance.networkLogin = InfomaniakNetworkLogin.instance
     }
 
     public static func handleRedirectUri(url: URL) -> Bool {
