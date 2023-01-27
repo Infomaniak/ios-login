@@ -14,23 +14,46 @@
  limitations under the License.
  */
 
+import InfomaniakCore
+import InfomaniakDI
 import InfomaniakLogin
 import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
-        let redirectUri = "com.infomaniak.drive://oauth2redirect"
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        setupDI()
 
-        InfomaniakLogin.initWith(clientId: clientId, redirectUri: redirectUri)
         return true
     }
 
     // Needed if there is no SceneDelegate.swift file
     var window: UIWindow?
 
-    func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
-        return InfomaniakLogin.handleRedirectUri(url: url)
+    func application(_ application: UIApplication,
+                     open url: URL, sourceApplication:
+                     String?, annotation: Any) -> Bool {
+        let service = InjectService<InfomaniakLogin>().wrappedValue
+        return service.handleRedirectUri(url: url)
+    }
+
+    func setupDI() {
+        /// The `InfomaniakLoginable` interface hides the concrete type `InfomaniakLogin`
+        try! SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
+            let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+            let redirectUri = "com.infomaniak.drive://oauth2redirect"
+            let login = InfomaniakLogin(clientId: clientId, redirectUri: redirectUri)
+            return login
+        })
+        
+        /// Chained resolution, the `InfomaniakTokenable` interface uses the `InfomaniakLogin` object as well
+        try! SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
+            return try resolver.resolve(type: InfomaniakLoginable.self,
+                                        forCustomTypeIdentifier: nil,
+                                        factoryParameters: nil,
+                                        resolver: resolver)
+        })
+        
     }
 }

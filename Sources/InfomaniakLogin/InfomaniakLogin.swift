@@ -17,13 +17,62 @@
 import AuthenticationServices
 import CommonCrypto
 import InfomaniakCore
+import InfomaniakDI
 import SafariServices
 import UIKit
 import WebKit
 
+/// Login delegation
 public protocol InfomaniakLoginDelegate: AnyObject {
     func didCompleteLoginWith(code: String, verifier: String)
     func didFailLoginWith(error: Error)
+}
+
+/// Something that can authentify with Infomaniak
+public protocol InfomaniakLoginable {
+    func handleRedirectUri(url: URL) -> Bool
+
+    func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor,
+                                      useEphemeralSession: Bool,
+                                      hideCreateAccountButton: Bool,
+                                      completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void)
+
+    func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor,
+                                      useEphemeralSession: Bool,
+                                      hideCreateAccountButton: Bool,
+                                      delegate: InfomaniakLoginDelegate?)
+
+    func loginFrom(viewController: UIViewController,
+                   hideCreateAccountButton: Bool,
+                   delegate: InfomaniakLoginDelegate?)
+
+    func webviewLoginFrom(viewController: UIViewController,
+                          hideCreateAccountButton: Bool,
+                          delegate: InfomaniakLoginDelegate?)
+
+    func setupWebviewNavbar(title: String?,
+                            titleColor: UIColor?,
+                            color: UIColor?,
+                            buttonColor: UIColor?,
+                            clearCookie: Bool,
+                            timeOutMessage: String?)
+
+    func webviewHandleRedirectUri(url: URL) -> Bool
+}
+
+/// Something that can handle tokens
+public protocol InfomaniakTokenable {
+    /// Get an api token async (callback on background thread)
+    func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void)
+
+    /// Get an api token async from an application password (callback on background thread)
+    func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void)
+
+    /// Refresh api token async (callback on background thread)
+    func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void)
+
+    /// Delete an api token async
+    func deleteApiToken(token: ApiToken, onError: @escaping (Error) -> Void)
 }
 
 class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProviding {
@@ -37,13 +86,12 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
     }
 }
 
-public class InfomaniakLogin {
+public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     private static let LOGIN_API_URL = "https://login.infomaniak.com/"
     private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
-
-    private static let instance = InfomaniakLogin()
-    private var networkLogin: InfomaniakNetworkLogin!
     
+    let networkLogin: InfomaniakNetworkLoginable
+
     private var delegate: InfomaniakLoginDelegate?
 
     private var clientId: String!
@@ -67,49 +115,172 @@ public class InfomaniakLogin {
     private var webviewNavbarTitleColor: UIColor?
     private var webviewTimeOutMessage: String?
 
-    private init() {
-        // Singleton
+    public init(clientId: String,
+                loginUrl: String = Constants.LOGIN_URL,
+                redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
+        self.loginBaseUrl = loginUrl
+        self.clientId = clientId
+        self.redirectUri = redirectUri
+        self.networkLogin = InfomaniakNetworkLogin(clientId: clientId,
+                                                   loginUrl: loginUrl,
+                                                   redirectUri: redirectUri)
     }
 
-    public static func initWith(clientId: String,
-                                loginUrl: String = Constants.LOGIN_URL,
-                                redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
-        instance.loginBaseUrl = loginUrl
-        instance.clientId = clientId
-        instance.redirectUri = redirectUri
-        InfomaniakNetworkLogin.initWith(clientId: clientId, loginUrl: loginUrl, redirectUri: redirectUri)
-        instance.networkLogin = InfomaniakNetworkLogin.instance
+    public func handleRedirectUri(url: URL) -> Bool {
+        return InfomaniakLogin.checkResponse(url: url,
+                                             onSuccess: { code in
+                                                 safariViewController?.dismiss(animated: true) {
+                                                     self.delegate?.didCompleteLoginWith(code: code, verifier: self.codeVerifier)
+                                                 }
+                                             },
+                                             onFailure: { error in
+                                                 safariViewController?.dismiss(animated: true) {
+                                                     self.delegate?.didFailLoginWith(error: error)
+                                                 }
+                                             })
     }
 
-    public static func handleRedirectUri(url: URL) -> Bool {
-        return checkResponse(url: url,
-                             onSuccess: { code in
-                                 instance.safariViewController?.dismiss(animated: true) {
-                                     instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
-                                 }
-                             },
-
-                             onFailure: { error in
-                                 instance.safariViewController?.dismiss(animated: true) {
-                                     instance.delegate?.didFailLoginWith(error: error)
-                                 }
-                             })
+    public func webviewHandleRedirectUri(url: URL) -> Bool {
+        return InfomaniakLogin.checkResponse(url: url,
+                                             onSuccess: { code in
+                                                 webViewController?.dismiss(animated: true) {
+                                                     self.delegate?.didCompleteLoginWith(code: code, verifier: self.codeVerifier)
+                                                 }
+                                             },
+                                             onFailure: { error in
+                                                 webViewController?.dismiss(animated: true) {
+                                                     self.delegate?.didFailLoginWith(error: error)
+                                                 }
+                                             })
     }
 
-    static func webviewHandleRedirectUri(url: URL) -> Bool {
-        return checkResponse(url: url,
-                             onSuccess: { code in
-                                 instance.webViewController?.dismiss(animated: true) {
-                                     instance.delegate?.didCompleteLoginWith(code: code, verifier: instance.codeVerifier)
-                                 }
-                             },
+    public func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
+                                             useEphemeralSession: Bool = false,
+                                             hideCreateAccountButton: Bool = true,
+                                             completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void) {
+        self.hideCreateAccountButton = hideCreateAccountButton
+        generatePkceCodes()
 
-                             onFailure: { error in
-                                 instance.webViewController?.dismiss(animated: true) {
-                                     instance.delegate?.didFailLoginWith(error: error)
-                                 }
-                             })
+        guard let loginUrl = generateUrl(),
+              let callbackUrl = URL(string: redirectUri),
+              let callbackUrlScheme = callbackUrl.scheme else {
+            return
+        }
+
+        let session = ASWebAuthenticationSession(url: loginUrl, callbackURLScheme: callbackUrlScheme) { callbackURL, error in
+            if let callbackURL = callbackURL {
+                _ = InfomaniakLogin.checkResponse(url: callbackURL,
+                                                  onSuccess: { code in
+                                                      completion(.success((code: code, verifier: self.codeVerifier)))
+                                                  },
+                                                  onFailure: { error in
+                                                      completion(.failure(error))
+                                                  })
+            } else if let error = error {
+                completion(.failure(error))
+            }
+        }
+        asPresentationContext = PresentationContext(anchor: anchor)
+        session.presentationContextProvider = asPresentationContext
+        session.prefersEphemeralWebBrowserSession = useEphemeralSession
+        session.start()
     }
+
+    public func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
+                                             useEphemeralSession: Bool = false,
+                                             hideCreateAccountButton: Bool = true,
+                                             delegate: InfomaniakLoginDelegate? = nil) {
+        self.delegate = delegate
+        asWebAuthenticationLoginFrom(anchor: anchor, useEphemeralSession: useEphemeralSession,
+                                     hideCreateAccountButton: hideCreateAccountButton) { result in
+            switch result {
+            case .success(let result):
+                delegate?.didCompleteLoginWith(code: result.code, verifier: result.verifier)
+            case .failure(let error):
+                delegate?.didFailLoginWith(error: error)
+            }
+        }
+    }
+
+    public func loginFrom(viewController: UIViewController,
+                          hideCreateAccountButton: Bool = true,
+                          delegate: InfomaniakLoginDelegate? = nil) {
+        self.hideCreateAccountButton = hideCreateAccountButton
+        self.delegate = delegate
+        generatePkceCodes()
+
+        guard let loginUrl = generateUrl() else {
+            return
+        }
+
+        safariViewController = SFSafariViewController(url: loginUrl)
+        viewController.present(safariViewController!, animated: true)
+    }
+
+    public func webviewLoginFrom(viewController: UIViewController,
+                                 hideCreateAccountButton: Bool = true,
+                                 delegate: InfomaniakLoginDelegate? = nil) {
+        self.hideCreateAccountButton = hideCreateAccountButton
+        self.delegate = delegate
+        generatePkceCodes()
+
+        guard let loginUrl = generateUrl() else {
+            return
+        }
+
+        let urlRequest = URLRequest(url: loginUrl)
+        webViewController = WebViewController()
+
+        if let navigationController = viewController as? UINavigationController {
+            navigationController.pushViewController(webViewController!, animated: true)
+        } else {
+            let navigationController = UINavigationController(rootViewController: webViewController!)
+            viewController.present(navigationController, animated: true)
+        }
+
+        webViewController?.urlRequest = urlRequest
+        webViewController?.redirectUri = redirectUri
+        webViewController?.clearCookie = clearCookie
+        webViewController?.navBarTitle = webviewNavbarTitle
+        webViewController?.navBarTitleColor = webviewNavbarTitleColor
+        webViewController?.navBarColor = webviewNavbarColor
+        webViewController?.navBarButtonColor = webviewNavbarButtonColor
+        webViewController?.timeOutMessage = webviewTimeOutMessage
+    }
+
+    public func setupWebviewNavbar(title: String?,
+                                   titleColor: UIColor?,
+                                   color: UIColor?,
+                                   buttonColor: UIColor?,
+                                   clearCookie: Bool = false,
+                                   timeOutMessage: String?) {
+        webviewNavbarTitle = title
+        webviewNavbarTitleColor = titleColor
+        webviewNavbarColor = color
+        webviewNavbarButtonColor = buttonColor
+        self.clearCookie = clearCookie
+        webviewTimeOutMessage = timeOutMessage
+    }
+
+    // MARK: - InfomaniakTokenable
+
+    public func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
+        networkLogin.getApiTokenUsing(code: code, codeVerifier: codeVerifier, completion: completion)
+    }
+
+    public func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
+        networkLogin.getApiToken(username: username, applicationPassword: applicationPassword, completion: completion)
+    }
+
+    public func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
+        networkLogin.refreshToken(token: token, completion: completion)
+    }
+
+    public func deleteApiToken(token: ApiToken, onError: @escaping (Error) -> Void) {
+        networkLogin.deleteApiToken(token: token, onError: onError)
+    }
+
+    // MARK: - Internal
 
     static func checkResponse(url: URL, onSuccess: (String) -> Void, onFailure: (InfomaniakLoginError) -> Void) -> Bool {
         if let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value {
@@ -121,136 +292,8 @@ public class InfomaniakLogin {
         }
     }
 
-    @available(iOS 13.0, *)
-    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
-                                                    useEphemeralSession: Bool = false,
-                                                    hideCreateAccountButton: Bool = true,
-                                                    completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void) {
-        let instance = InfomaniakLogin.instance
-        instance.hideCreateAccountButton = hideCreateAccountButton
-        instance.generatePkceCodes()
+    // MARK: - Private
 
-        guard let loginUrl = instance.generateUrl(),
-              let callbackUrl = URL(string: instance.redirectUri),
-              let callbackUrlScheme = callbackUrl.scheme else {
-            return
-        }
-
-        let session = ASWebAuthenticationSession(url: loginUrl, callbackURLScheme: callbackUrlScheme) { callbackURL, error in
-            if let callbackURL = callbackURL {
-                _ = checkResponse(url: callbackURL,
-                                  onSuccess: { code in
-                                      completion(.success((code: code, verifier: instance.codeVerifier)))
-                                  },
-                                  onFailure: { error in
-                                      completion(.failure(error))
-                                  })
-            } else if let error = error {
-                completion(.failure(error))
-            }
-        }
-        instance.asPresentationContext = PresentationContext(anchor: anchor)
-        session.presentationContextProvider = instance.asPresentationContext
-        session.prefersEphemeralWebBrowserSession = useEphemeralSession
-        session.start()
-    }
-
-    @available(iOS 13.0, *)
-    public static func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
-                                                    useEphemeralSession: Bool = false,
-                                                    hideCreateAccountButton: Bool = true,
-                                                    delegate: InfomaniakLoginDelegate? = nil) {
-        let instance = InfomaniakLogin.instance
-        instance.delegate = delegate
-        asWebAuthenticationLoginFrom(anchor: anchor, useEphemeralSession: useEphemeralSession, hideCreateAccountButton: hideCreateAccountButton) { result in
-            switch result {
-            case .success(let result):
-                instance.delegate?.didCompleteLoginWith(code: result.code, verifier: result.verifier)
-            case .failure(let error):
-                instance.delegate?.didFailLoginWith(error: error)
-            }
-        }
-    }
-
-    public static func loginFrom(viewController: UIViewController,
-                                 hideCreateAccountButton: Bool = true,
-                                 delegate: InfomaniakLoginDelegate? = nil) {
-        let instance = InfomaniakLogin.instance
-        instance.hideCreateAccountButton = hideCreateAccountButton
-        instance.delegate = delegate
-        instance.generatePkceCodes()
-
-        guard let loginUrl = instance.generateUrl() else {
-            return
-        }
-
-        instance.safariViewController = SFSafariViewController(url: loginUrl)
-        viewController.present(instance.safariViewController!, animated: true)
-    }
-
-    public static func webviewLoginFrom(viewController: UIViewController,
-                                        hideCreateAccountButton: Bool = true,
-                                        delegate: InfomaniakLoginDelegate? = nil) {
-        let instance = InfomaniakLogin.instance
-        instance.hideCreateAccountButton = hideCreateAccountButton
-        instance.delegate = delegate
-        instance.generatePkceCodes()
-
-        guard let loginUrl = instance.generateUrl() else {
-            return
-        }
-
-        let urlRequest = URLRequest(url: loginUrl)
-        instance.webViewController = WebViewController()
-
-        if let navigationController = viewController as? UINavigationController {
-            navigationController.pushViewController(instance.webViewController!, animated: true)
-        } else {
-            let navigationController = UINavigationController(rootViewController: instance.webViewController!)
-            viewController.present(navigationController, animated: true)
-        }
-
-        instance.webViewController?.urlRequest = urlRequest
-        instance.webViewController?.redirectUri = instance.redirectUri
-        instance.webViewController?.clearCookie = instance.clearCookie
-        instance.webViewController?.navBarTitle = instance.webviewNavbarTitle
-        instance.webViewController?.navBarTitleColor = instance.webviewNavbarTitleColor
-        instance.webViewController?.navBarColor = instance.webviewNavbarColor
-        instance.webViewController?.navBarButtonColor = instance.webviewNavbarButtonColor
-        instance.webViewController?.timeOutMessage = instance.webviewTimeOutMessage
-    }
-
-    public static func setupWebviewNavbar(title: String?, titleColor: UIColor?, color: UIColor?, buttonColor: UIColor?, clearCookie: Bool = false, timeOutMessage: String?) {
-        instance.webviewNavbarTitle = title
-        instance.webviewNavbarTitleColor = titleColor
-        instance.webviewNavbarColor = color
-        instance.webviewNavbarButtonColor = buttonColor
-        instance.clearCookie = clearCookie
-        instance.webviewTimeOutMessage = timeOutMessage
-    }
-
-    // MARK: - Token
-
-    /// Get an api token async (callback on background thread)
-    public static func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
-        InfomaniakNetworkLogin.getApiTokenUsing(code: code, codeVerifier: codeVerifier, completion: completion)
-    }
-
-    /// Get an api token async from an application password (callback on background thread)
-    public static func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
-        InfomaniakNetworkLogin.getApiToken(username: username, applicationPassword: applicationPassword, completion: completion)
-    }
-
-    /// Refresh api token async (callback on background thread)
-    public static func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
-        InfomaniakNetworkLogin.refreshToken(token: token, completion: completion)
-    }
-
-    /// Delete an api token async
-    public static func deleteApiToken(token: ApiToken, onError: @escaping (Error) -> Void) {
-        InfomaniakNetworkLogin.deleteApiToken(token: token, onError: onError)
-    }
-    
     private func generatePkceCodes() {
         codeChallengeMethod = Constants.HASH_MODE_SHORT
         codeVerifier = generateCodeVerifier()

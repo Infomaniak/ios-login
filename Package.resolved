@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/Infomaniak/ios-core",
         "state": {
           "branch": null,
-          "revision": "3435692e2069eb21a20b6d8f4e81d3f7ec6d83c6",
-          "version": "2.0.2"
+          "revision": "904e0656671cb1b51a45a9f28be857ed4b37daac",
+          "version": "3.0.0"
         }
       },
       {
@@ -24,8 +24,17 @@
         "repositoryURL": "https://github.com/Infomaniak/ios-core-ui.git",
         "state": {
           "branch": null,
-          "revision": "9eacdd0dc62514b39ed213da23613f8cce88084d",
-          "version": "1.1.0"
+          "revision": "81ca877f372e4e7a9ff9189aa8eeda967e67e33f",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "InfomaniakDI",
+        "repositoryURL": "https://github.com/Infomaniak/ios-dependency-injection",
+        "state": {
+          "branch": null,
+          "revision": "4322cb2c1b18e13b7cb8ddfc56f9565a7d20f684",
+          "version": "1.1.1"
         }
       },
       {
