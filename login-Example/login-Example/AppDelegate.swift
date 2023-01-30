@@ -39,21 +39,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func setupDI() {
-        /// The `InfomaniakLoginable` interface hides the concrete type `InfomaniakLogin`
-        try! SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
-            let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
-            let redirectUri = "com.infomaniak.drive://oauth2redirect"
-            let login = InfomaniakLogin(clientId: clientId, redirectUri: redirectUri)
-            return login
-        })
-        
-        /// Chained resolution, the `InfomaniakTokenable` interface uses the `InfomaniakLogin` object as well
-        try! SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
-            return try resolver.resolve(type: InfomaniakLoginable.self,
-                                        forCustomTypeIdentifier: nil,
-                                        factoryParameters: nil,
-                                        resolver: resolver)
-        })
-        
+        do {
+            /// The `InfomaniakLoginable` interface hides the concrete type `InfomaniakLogin`
+            try SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
+                let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+                let redirectUri = "com.infomaniak.drive://oauth2redirect"
+                let login = InfomaniakLogin(clientId: clientId, redirectUri: redirectUri)
+                return login
+            })
+            
+            /// Chained resolution, the `InfomaniakTokenable` interface uses the `InfomaniakLogin` object as well
+            try SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
+                return try resolver.resolve(type: InfomaniakLoginable.self,
+                                            forCustomTypeIdentifier: nil,
+                                            factoryParameters: nil,
+                                            resolver: resolver)
+            })
+        } catch {
+            fatalError("unexpected \(error)")
+        }
     }
 }
