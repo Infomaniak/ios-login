@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/Infomaniak/ios-core",
         "state": {
           "branch": null,
-          "revision": "3435692e2069eb21a20b6d8f4e81d3f7ec6d83c6",
-          "version": "2.0.2"
+          "revision": "7410fa823e99abf6de5cbefb8b79f8a58dc8c393",
+          "version": "3.1.0"
         }
       },
       {
@@ -24,8 +24,17 @@
         "repositoryURL": "https://github.com/Infomaniak/ios-core-ui.git",
         "state": {
           "branch": null,
-          "revision": "9eacdd0dc62514b39ed213da23613f8cce88084d",
-          "version": "1.1.0"
+          "revision": "4e8b5ca3881020bca6fec5baf0c24a87f8bc0883",
+          "version": "2.1.0"
+        }
+      },
+      {
+        "package": "InfomaniakDI",
+        "repositoryURL": "https://github.com/Infomaniak/ios-dependency-injection",
+        "state": {
+          "branch": null,
+          "revision": "67889387a7a7c9e3299f8a3764ef9427f5802d57",
+          "version": "1.1.5"
         }
       },
       {
@@ -60,8 +69,8 @@
         "repositoryURL": "https://github.com/realm/realm-swift",
         "state": {
           "branch": null,
-          "revision": "b442ee3e9caa1abab26fd9b23f060f6f0815ff48",
-          "version": "10.33.0"
+          "revision": "b1072f3ef733108dfcc62c2001781e5d65605fbf",
+          "version": "10.34.1"
         }
       },
       {

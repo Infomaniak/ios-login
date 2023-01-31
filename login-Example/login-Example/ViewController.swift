@@ -14,10 +14,15 @@
  limitations under the License.
  */
 
+import AuthenticationServices
+import InfomaniakDI
 import InfomaniakLogin
 import UIKit
 
 class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDelegate {
+    @InjectService var loginService: InfomaniakLoginable
+    @InjectService var tokenService: InfomaniakTokenable
+
     func didCompleteDeleteAccount() {
         showAlert(title: "Account deleted", message: nil)
     }
@@ -31,7 +36,7 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
     }
 
     func didCompleteLoginWith(code: String, verifier: String) {
-        InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { token, error in
+        tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, error in
             var title: String?
             var description: String?
 
@@ -53,13 +58,16 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
 
     @IBAction func deleteAccount(_ sender: Any) {
         if #available(iOS 13.0, *) {
-            InfomaniakLogin.asWebAuthenticationLoginFrom(useEphemeralSession: true) { result in
+            loginService.asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor(),
+                                                      useEphemeralSession: true,
+                                                      hideCreateAccountButton: true) { result in
                 switch result {
                 case .success((let code, let verifier)):
-                    InfomaniakLogin.getApiTokenUsing(code: code, codeVerifier: verifier) { token, _ in
+                    self.tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, _ in
                         if let token = token {
                             DispatchQueue.main.async {
-                                let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(delegate: self, accessToken: token.accessToken)
+                                let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(delegate: self,
+                                                                                                                          accessToken: token.accessToken)
                                 self.present(deleteAccountViewController, animated: true)
                             }
                         }
@@ -72,17 +80,29 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
     }
 
     @IBAction func login(_ sender: UIButton) {
-        InfomaniakLogin.loginFrom(viewController: self, delegate: self)
+        loginService.loginFrom(viewController: self,
+                               hideCreateAccountButton: true,
+                               delegate: self)
     }
 
     @IBAction func webviewLogin(_ sender: UIButton) {
-        InfomaniakLogin.setupWebviewNavbar(title: nil, titleColor: nil, color: nil, buttonColor: UIColor.white, clearCookie: true, timeOutMessage: "Problème de chargement !")
-        InfomaniakLogin.webviewLoginFrom(viewController: self, delegate: self)
+        loginService.setupWebviewNavbar(title: nil,
+                                        titleColor: nil,
+                                        color: nil,
+                                        buttonColor: UIColor.white,
+                                        clearCookie: true,
+                                        timeOutMessage: "Problème de chargement !")
+        loginService.webviewLoginFrom(viewController: self,
+                                      hideCreateAccountButton: false,
+                                      delegate: self)
     }
 
     @IBAction func asWebAuthentication(_ sender: Any) {
         if #available(iOS 13.0, *) {
-            InfomaniakLogin.asWebAuthenticationLoginFrom(useEphemeralSession: true, delegate: self)
+            loginService.asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor(),
+                                                      useEphemeralSession: true,
+                                                      hideCreateAccountButton: true,
+                                                      delegate: self)
         }
     }
 

@@ -14,25 +14,25 @@
  limitations under the License.
  */
 
+import InfomaniakDI
 import InfomaniakLogin
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
-    @available(iOS 13.0, *)
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
+    @InjectService var loginService: InfomaniakLoginable
+
+    func scene(_ scene: UIScene,
+               willConnectTo session: UISceneSession,
+               options connectionOptions: UIScene.ConnectionOptions) {
         guard let _ = (scene as? UIWindowScene) else { return }
     }
 
-    @available(iOS 13.0, *)
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
             // Handle URL
-            InfomaniakLogin.handleRedirectUri(url: url)
+            _ = loginService.handleRedirectUri(url: url)
         }
     }
 }

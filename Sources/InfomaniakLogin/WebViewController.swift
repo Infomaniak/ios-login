@@ -15,10 +15,13 @@
  */
 
 import UIKit
+import InfomaniakDI
 import WebKit
 
 class WebViewController: UIViewController, WKUIDelegate {
 
+    @InjectService var infomaniakLogin: InfomaniakLoginable
+    
     var clearCookie: Bool!
     var navBarButtonColor: UIColor?
     var navBarColor: UIColor?
@@ -51,7 +54,11 @@ class WebViewController: UIViewController, WKUIDelegate {
         setupProgressView()
         setupEstimatedProgressObserver()
         webView.load(urlRequest)
-        timer = Timer.scheduledTimer(timeInterval: maxLoadingTime, target: self, selector: #selector(timeOutError), userInfo: nil, repeats: false)
+        timer = Timer.scheduledTimer(timeInterval: maxLoadingTime,
+                                     target: self,
+                                     selector: #selector(timeOutError),
+                                     userInfo: nil,
+                                     repeats: false)
     }
 
     private func setupProgressView() {
@@ -169,7 +176,7 @@ extension WebViewController: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
         if webView.url?.absoluteString.starts(with: redirectUri) ?? false {
-            InfomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
+            _ = infomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
         }
     }
 
