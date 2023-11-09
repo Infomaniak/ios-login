@@ -87,9 +87,6 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
 }
 
 public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
-    private static let LOGIN_API_URL = "https://login.infomaniak.com/"
-    private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
-
     let networkLogin: InfomaniakNetworkLoginable
 
     private var delegate: InfomaniakLoginDelegate?
