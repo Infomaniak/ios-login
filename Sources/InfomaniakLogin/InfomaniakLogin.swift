@@ -89,7 +89,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
 public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     private static let LOGIN_API_URL = "https://login.infomaniak.com/"
     private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
-    
+
     let networkLogin: InfomaniakNetworkLoginable
 
     private var delegate: InfomaniakLoginDelegate?
@@ -118,12 +118,12 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     public init(clientId: String,
                 loginUrl: String = Constants.LOGIN_URL,
                 redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
-        self.loginBaseUrl = loginUrl
+        loginBaseUrl = loginUrl
         self.clientId = clientId
         self.redirectUri = redirectUri
-        self.networkLogin = InfomaniakNetworkLogin(clientId: clientId,
-                                                   loginUrl: loginUrl,
-                                                   redirectUri: redirectUri)
+        networkLogin = InfomaniakNetworkLogin(clientId: clientId,
+                                              loginUrl: loginUrl,
+                                              redirectUri: redirectUri)
     }
 
     public func handleRedirectUri(url: URL) -> Bool {
