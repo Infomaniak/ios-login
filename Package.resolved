@@ -11,21 +11,21 @@
         }
       },
       {
+        "package": "CocoaLumberjack",
+        "repositoryURL": "https://github.com/CocoaLumberjack/CocoaLumberjack",
+        "state": {
+          "branch": null,
+          "revision": "363ed23d19a931809ea834a7d722da830353806a",
+          "version": "3.8.2"
+        }
+      },
+      {
         "package": "InfomaniakCore",
         "repositoryURL": "https://github.com/Infomaniak/ios-core",
         "state": {
           "branch": null,
-          "revision": "7410fa823e99abf6de5cbefb8b79f8a58dc8c393",
-          "version": "3.1.0"
-        }
-      },
-      {
-        "package": "InfomaniakCoreUI",
-        "repositoryURL": "https://github.com/Infomaniak/ios-core-ui.git",
-        "state": {
-          "branch": null,
-          "revision": "4e8b5ca3881020bca6fec5baf0c24a87f8bc0883",
-          "version": "2.1.0"
+          "revision": "63012ec35e0452e87245217b2df28974a784344b",
+          "version": "4.1.24"
         }
       },
       {
@@ -33,26 +33,17 @@
         "repositoryURL": "https://github.com/Infomaniak/ios-dependency-injection",
         "state": {
           "branch": null,
-          "revision": "67889387a7a7c9e3299f8a3764ef9427f5802d57",
-          "version": "1.1.5"
+          "revision": "b4d872b5baf5d6f19b98fdfd765205c57870d02e",
+          "version": "1.1.11"
         }
       },
       {
-        "package": "Kingfisher",
-        "repositoryURL": "https://github.com/onevcat/Kingfisher",
+        "package": "MatomoTracker",
+        "repositoryURL": "https://github.com/matomo-org/matomo-sdk-ios",
         "state": {
           "branch": null,
-          "revision": "90135885ef506506620c4911cefb55a95ca2a9a2",
-          "version": "7.5.0"
-        }
-      },
-      {
-        "package": "LocalizeKit",
-        "repositoryURL": "https://github.com/PhilippeWeidmann/LocalizeKit",
-        "state": {
-          "branch": null,
-          "revision": "1abb86ce614ae8d925bf82123c7360ab95827975",
-          "version": "1.0.1"
+          "revision": "15a645e11eaa8053f93749d73ced03da1e56fd01",
+          "version": "7.5.2"
         }
       },
       {
@@ -78,26 +69,17 @@
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,
-          "revision": "cf43eac1aa12017868c257ad3854ad87a5de0758",
-          "version": "7.31.5"
+          "revision": "66e7c6921261acb1fd9461edbaf5899378711c56",
+          "version": "8.15.1"
         }
       },
       {
-        "package": "SnackBar",
-        "repositoryURL": "https://github.com/PhilippeWeidmann/SnackBar.swift",
+        "package": "swift-log",
+        "repositoryURL": "https://github.com/apple/swift-log.git",
         "state": {
           "branch": null,
-          "revision": "9e2f25bad90a7fb4f5764814c47a8448ba5df58d",
-          "version": "0.1.5"
-        }
-      },
-      {
-        "package": "SnapKit",
-        "repositoryURL": "https://github.com/SnapKit/SnapKit.git",
-        "state": {
-          "branch": null,
-          "revision": "f222cbdf325885926566172f6f5f06af95473158",
-          "version": "5.6.0"
+          "revision": "532d8b529501fb73a2455b179e0bbb6d49b652ed",
+          "version": "1.5.3"
         }
       }
     ]

@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-import InfomaniakCoreUI
+#if canImport(UIKit)
 import InfomaniakCore
 import UIKit
 import WebKit
@@ -61,7 +61,12 @@ public class DeleteAccountViewController: UIViewController {
         }
     }
 
-    public static func instantiateInViewController(delegate: DeleteAccountDelegate? = nil, accessToken: String?, navBarColor: UIColor? = nil, navBarButtonColor: UIColor? = nil) -> UINavigationController {
+    public static func instantiateInViewController(
+        delegate: DeleteAccountDelegate? = nil,
+        accessToken: String?,
+        navBarColor: UIColor? = nil,
+        navBarButtonColor: UIColor? = nil
+    ) -> UINavigationController {
         let deleteAccountViewController = DeleteAccountViewController()
         deleteAccountViewController.delegate = delegate
         deleteAccountViewController.accessToken = accessToken
@@ -130,7 +135,11 @@ public class DeleteAccountViewController: UIViewController {
 // MARK: - WKNavigationDelegate
 
 extension DeleteAccountViewController: WKNavigationDelegate {
-    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    public func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
         if let url = navigationAction.request.url {
             let urlString = url.absoluteString
             if urlString.starts(with: Constants.LOGIN_URL) {
@@ -154,7 +163,11 @@ extension DeleteAccountViewController: WKNavigationDelegate {
         dismiss(animated: true)
     }
 
-    public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+    public func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationResponse: WKNavigationResponse,
+        decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+    ) {
         guard let statusCode = (navigationResponse.response as? HTTPURLResponse)?.statusCode else {
             decisionHandler(.allow)
             return
@@ -174,3 +187,4 @@ extension DeleteAccountViewController: WKNavigationDelegate {
         dismiss(animated: true)
     }
 }
+#endif

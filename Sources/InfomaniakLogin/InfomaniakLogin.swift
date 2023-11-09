@@ -19,8 +19,10 @@ import CommonCrypto
 import InfomaniakCore
 import InfomaniakDI
 import SafariServices
-import UIKit
 import WebKit
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Login delegation
 public protocol InfomaniakLoginDelegate: AnyObject {
@@ -30,8 +32,6 @@ public protocol InfomaniakLoginDelegate: AnyObject {
 
 /// Something that can authentify with Infomaniak
 public protocol InfomaniakLoginable {
-    func handleRedirectUri(url: URL) -> Bool
-
     func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor,
                                       useEphemeralSession: Bool,
                                       hideCreateAccountButton: Bool,
@@ -41,6 +41,9 @@ public protocol InfomaniakLoginable {
                                       useEphemeralSession: Bool,
                                       hideCreateAccountButton: Bool,
                                       delegate: InfomaniakLoginDelegate?)
+
+    #if canImport(UIKit)
+    func handleRedirectUri(url: URL) -> Bool
 
     func loginFrom(viewController: UIViewController,
                    hideCreateAccountButton: Bool,
@@ -58,6 +61,7 @@ public protocol InfomaniakLoginable {
                             timeOutMessage: String?)
 
     func webviewHandleRedirectUri(url: URL) -> Bool
+    #endif
 }
 
 /// Something that can handle tokens
@@ -87,9 +91,6 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
 }
 
 public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
-    private static let LOGIN_API_URL = "https://login.infomaniak.com/"
-    private static let GET_TOKEN_API_URL = LOGIN_API_URL + "token"
-    
     let networkLogin: InfomaniakNetworkLoginable
 
     private var delegate: InfomaniakLoginDelegate?
@@ -103,55 +104,29 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     private var codeVerifier: String!
 
     private var asPresentationContext: PresentationContext?
+    private var hideCreateAccountButton = true
 
+    #if canImport(UIKit)
     private var safariViewController: SFSafariViewController?
 
     private var clearCookie = false
-    private var hideCreateAccountButton = true
     private var webViewController: WebViewController?
     private var webviewNavbarButtonColor: UIColor?
     private var webviewNavbarColor: UIColor?
     private var webviewNavbarTitle: String?
     private var webviewNavbarTitleColor: UIColor?
     private var webviewTimeOutMessage: String?
+    #endif
 
     public init(clientId: String,
                 loginUrl: String = Constants.LOGIN_URL,
                 redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
-        self.loginBaseUrl = loginUrl
+        loginBaseUrl = loginUrl
         self.clientId = clientId
         self.redirectUri = redirectUri
-        self.networkLogin = InfomaniakNetworkLogin(clientId: clientId,
-                                                   loginUrl: loginUrl,
-                                                   redirectUri: redirectUri)
-    }
-
-    public func handleRedirectUri(url: URL) -> Bool {
-        return InfomaniakLogin.checkResponse(url: url,
-                                             onSuccess: { code in
-                                                 safariViewController?.dismiss(animated: true) {
-                                                     self.delegate?.didCompleteLoginWith(code: code, verifier: self.codeVerifier)
-                                                 }
-                                             },
-                                             onFailure: { error in
-                                                 safariViewController?.dismiss(animated: true) {
-                                                     self.delegate?.didFailLoginWith(error: error)
-                                                 }
-                                             })
-    }
-
-    public func webviewHandleRedirectUri(url: URL) -> Bool {
-        return InfomaniakLogin.checkResponse(url: url,
-                                             onSuccess: { code in
-                                                 webViewController?.dismiss(animated: true) {
-                                                     self.delegate?.didCompleteLoginWith(code: code, verifier: self.codeVerifier)
-                                                 }
-                                             },
-                                             onFailure: { error in
-                                                 webViewController?.dismiss(animated: true) {
-                                                     self.delegate?.didFailLoginWith(error: error)
-                                                 }
-                                             })
+        networkLogin = InfomaniakNetworkLogin(clientId: clientId,
+                                              loginUrl: loginUrl,
+                                              redirectUri: redirectUri)
     }
 
     public func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
@@ -200,66 +175,6 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
                 delegate?.didFailLoginWith(error: error)
             }
         }
-    }
-
-    public func loginFrom(viewController: UIViewController,
-                          hideCreateAccountButton: Bool = true,
-                          delegate: InfomaniakLoginDelegate? = nil) {
-        self.hideCreateAccountButton = hideCreateAccountButton
-        self.delegate = delegate
-        generatePkceCodes()
-
-        guard let loginUrl = generateUrl() else {
-            return
-        }
-
-        safariViewController = SFSafariViewController(url: loginUrl)
-        viewController.present(safariViewController!, animated: true)
-    }
-
-    public func webviewLoginFrom(viewController: UIViewController,
-                                 hideCreateAccountButton: Bool = true,
-                                 delegate: InfomaniakLoginDelegate? = nil) {
-        self.hideCreateAccountButton = hideCreateAccountButton
-        self.delegate = delegate
-        generatePkceCodes()
-
-        guard let loginUrl = generateUrl() else {
-            return
-        }
-
-        let urlRequest = URLRequest(url: loginUrl)
-        webViewController = WebViewController()
-
-        if let navigationController = viewController as? UINavigationController {
-            navigationController.pushViewController(webViewController!, animated: true)
-        } else {
-            let navigationController = UINavigationController(rootViewController: webViewController!)
-            viewController.present(navigationController, animated: true)
-        }
-
-        webViewController?.urlRequest = urlRequest
-        webViewController?.redirectUri = redirectUri
-        webViewController?.clearCookie = clearCookie
-        webViewController?.navBarTitle = webviewNavbarTitle
-        webViewController?.navBarTitleColor = webviewNavbarTitleColor
-        webViewController?.navBarColor = webviewNavbarColor
-        webViewController?.navBarButtonColor = webviewNavbarButtonColor
-        webViewController?.timeOutMessage = webviewTimeOutMessage
-    }
-
-    public func setupWebviewNavbar(title: String?,
-                                   titleColor: UIColor?,
-                                   color: UIColor?,
-                                   buttonColor: UIColor?,
-                                   clearCookie: Bool = false,
-                                   timeOutMessage: String?) {
-        webviewNavbarTitle = title
-        webviewNavbarTitleColor = titleColor
-        webviewNavbarColor = color
-        webviewNavbarButtonColor = buttonColor
-        self.clearCookie = clearCookie
-        webviewTimeOutMessage = timeOutMessage
     }
 
     // MARK: - InfomaniakTokenable
@@ -351,3 +266,95 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
             .trimmingCharacters(in: .whitespaces)
     }
 }
+
+#if canImport(UIKit)
+public extension InfomaniakLogin {
+    func handleRedirectUri(url: URL) -> Bool {
+        return InfomaniakLogin.checkResponse(url: url,
+                                             onSuccess: { code in
+                                                 safariViewController?.dismiss(animated: true) {
+                                                     self.delegate?.didCompleteLoginWith(code: code, verifier: self.codeVerifier)
+                                                 }
+                                             },
+                                             onFailure: { error in
+                                                 safariViewController?.dismiss(animated: true) {
+                                                     self.delegate?.didFailLoginWith(error: error)
+                                                 }
+                                             })
+    }
+
+    func webviewHandleRedirectUri(url: URL) -> Bool {
+        return InfomaniakLogin.checkResponse(url: url,
+                                             onSuccess: { code in
+                                                 webViewController?.dismiss(animated: true) {
+                                                     self.delegate?.didCompleteLoginWith(code: code, verifier: self.codeVerifier)
+                                                 }
+                                             },
+                                             onFailure: { error in
+                                                 webViewController?.dismiss(animated: true) {
+                                                     self.delegate?.didFailLoginWith(error: error)
+                                                 }
+                                             })
+    }
+
+    func loginFrom(viewController: UIViewController,
+                   hideCreateAccountButton: Bool = true,
+                   delegate: InfomaniakLoginDelegate? = nil) {
+        self.hideCreateAccountButton = hideCreateAccountButton
+        self.delegate = delegate
+        generatePkceCodes()
+
+        guard let loginUrl = generateUrl() else {
+            return
+        }
+
+        safariViewController = SFSafariViewController(url: loginUrl)
+        viewController.present(safariViewController!, animated: true)
+    }
+
+    func webviewLoginFrom(viewController: UIViewController,
+                          hideCreateAccountButton: Bool = true,
+                          delegate: InfomaniakLoginDelegate? = nil) {
+        self.hideCreateAccountButton = hideCreateAccountButton
+        self.delegate = delegate
+        generatePkceCodes()
+
+        guard let loginUrl = generateUrl() else {
+            return
+        }
+
+        let urlRequest = URLRequest(url: loginUrl)
+        webViewController = WebViewController()
+
+        if let navigationController = viewController as? UINavigationController {
+            navigationController.pushViewController(webViewController!, animated: true)
+        } else {
+            let navigationController = UINavigationController(rootViewController: webViewController!)
+            viewController.present(navigationController, animated: true)
+        }
+
+        webViewController?.urlRequest = urlRequest
+        webViewController?.redirectUri = redirectUri
+        webViewController?.clearCookie = clearCookie
+        webViewController?.navBarTitle = webviewNavbarTitle
+        webViewController?.navBarTitleColor = webviewNavbarTitleColor
+        webViewController?.navBarColor = webviewNavbarColor
+        webViewController?.navBarButtonColor = webviewNavbarButtonColor
+        webViewController?.timeOutMessage = webviewTimeOutMessage
+    }
+
+    func setupWebviewNavbar(title: String?,
+                            titleColor: UIColor?,
+                            color: UIColor?,
+                            buttonColor: UIColor?,
+                            clearCookie: Bool = false,
+                            timeOutMessage: String?) {
+        webviewNavbarTitle = title
+        webviewNavbarTitleColor = titleColor
+        webviewNavbarColor = color
+        webviewNavbarButtonColor = buttonColor
+        self.clearCookie = clearCookie
+        webviewTimeOutMessage = timeOutMessage
+    }
+}
+#endif

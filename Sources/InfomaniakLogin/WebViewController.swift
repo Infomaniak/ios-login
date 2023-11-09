@@ -14,14 +14,14 @@
  limitations under the License.
  */
 
-import UIKit
+#if canImport(UIKit)
 import InfomaniakDI
+import UIKit
 import WebKit
 
 class WebViewController: UIViewController, WKUIDelegate {
-
     @InjectService var infomaniakLogin: InfomaniakLoginable
-    
+
     var clearCookie: Bool!
     var navBarButtonColor: UIColor?
     var navBarColor: UIColor?
@@ -37,7 +37,6 @@ class WebViewController: UIViewController, WKUIDelegate {
     let maxLoadingTime = 20.0
     var timeOutMessage: String?
     var timer: Timer?
-
 
     override func loadView() {
         super.loadView()
@@ -62,7 +61,6 @@ class WebViewController: UIViewController, WKUIDelegate {
     }
 
     private func setupProgressView() {
-
         guard let navigationBar = navigationController?.navigationBar else { return }
 
         progressView.translatesAutoresizingMaskIntoConstraints = false
@@ -76,7 +74,7 @@ class WebViewController: UIViewController, WKUIDelegate {
 
             progressView.bottomAnchor.constraint(equalTo: navigationBar.bottomAnchor),
             progressView.heightAnchor.constraint(equalToConstant: 2.0)
-            ])
+        ])
     }
 
     private func setupEstimatedProgressObserver() {
@@ -86,7 +84,7 @@ class WebViewController: UIViewController, WKUIDelegate {
     }
 
     func setupNavBar() {
-        self.title = navBarTitle ?? "login.infomaniak.com"
+        title = navBarTitle ?? "login.infomaniak.com"
 
         if #available(iOS 13.0, *) {
             let navigationAppearance = UINavigationBarAppearance()
@@ -100,22 +98,23 @@ class WebViewController: UIViewController, WKUIDelegate {
             self.navigationController?.navigationBar.standardAppearance = navigationAppearance
         } else {
             if let navBarColor = navBarColor {
-                self.navigationController?.navigationBar.backgroundColor = navBarColor
+                navigationController?.navigationBar.backgroundColor = navBarColor
             }
             if let navBarTitleColor = navBarTitleColor {
-                self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
+                navigationController?.navigationBar
+                    .titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
             }
         }
 
-        let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(self.doneButtonPressed))
+        let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(doneButtonPressed))
         if let navBarButtonColor = navBarButtonColor {
             backButton.tintColor = navBarButtonColor
         }
-        self.navigationItem.leftBarButtonItem = backButton
+        navigationItem.leftBarButtonItem = backButton
     }
 
     @objc func doneButtonPressed() {
-        self.dismiss(animated: true)
+        dismiss(animated: true)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -126,15 +125,19 @@ class WebViewController: UIViewController, WKUIDelegate {
     }
 
     func cleanCookies() {
-        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { (records) in
+        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
             for record in records {
-                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record]) { }
+                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record]) {}
             }
         }
     }
 
     @objc func timeOutError() {
-        let alertController = UIAlertController(title: timeOutMessage ?? "Page Not Loading !", message: nil, preferredStyle: .alert)
+        let alertController = UIAlertController(
+            title: timeOutMessage ?? "Page Not Loading !",
+            message: nil,
+            preferredStyle: .alert
+        )
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: {
             _ in
             self.dismiss(animated: true, completion: nil)
@@ -143,22 +146,24 @@ class WebViewController: UIViewController, WKUIDelegate {
     }
 }
 
-
-//MARK: - WKNavigationDelegate
+// MARK: - WKNavigationDelegate
 
 extension WebViewController: WKNavigationDelegate {
-
     func webView(_: WKWebView, didStartProvisionalNavigation _: WKNavigation!) {
         if progressView.isHidden {
             progressView.isHidden = false
         }
         UIView.animate(withDuration: 0.33,
-            animations: {
-                self.progressView.alpha = 1.0
-            })
+                       animations: {
+                           self.progressView.alpha = 1.0
+                       })
     }
 
-    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
+    public func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void
+    ) {
         if let host = navigationAction.request.url?.host {
             if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {
                 decisionHandler(.allow)
@@ -182,19 +187,16 @@ extension WebViewController: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         UIView.animate(withDuration: 0.33,
-            animations: {
-                self.progressView.alpha = 0.0
-            },
-            completion: { isFinished in
-                self.progressView.isHidden = isFinished
-            })
+                       animations: {
+                           self.progressView.alpha = 0.0
+                       },
+                       completion: { isFinished in
+                           self.progressView.isHidden = isFinished
+                       })
     }
 
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         timer?.invalidate()
     }
-
 }
-
-
-
+#endif
