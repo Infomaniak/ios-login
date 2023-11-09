@@ -19,8 +19,10 @@ import CommonCrypto
 import InfomaniakCore
 import InfomaniakDI
 import SafariServices
-import UIKit
 import WebKit
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Login delegation
 public protocol InfomaniakLoginDelegate: AnyObject {
@@ -40,6 +42,7 @@ public protocol InfomaniakLoginable {
                                       hideCreateAccountButton: Bool,
                                       delegate: InfomaniakLoginDelegate?)
 
+    #if canImport(UIKit)
     func handleRedirectUri(url: URL) -> Bool
 
     func loginFrom(viewController: UIViewController,
@@ -58,6 +61,7 @@ public protocol InfomaniakLoginable {
                             timeOutMessage: String?)
 
     func webviewHandleRedirectUri(url: URL) -> Bool
+    #endif
 }
 
 /// Something that can handle tokens
@@ -102,6 +106,7 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     private var asPresentationContext: PresentationContext?
     private var hideCreateAccountButton = true
 
+    #if canImport(UIKit)
     private var safariViewController: SFSafariViewController?
 
     private var clearCookie = false
@@ -111,6 +116,7 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     private var webviewNavbarTitle: String?
     private var webviewNavbarTitleColor: UIColor?
     private var webviewTimeOutMessage: String?
+    #endif
 
     public init(clientId: String,
                 loginUrl: String = Constants.LOGIN_URL,
@@ -261,6 +267,7 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     }
 }
 
+#if canImport(UIKit)
 public extension InfomaniakLogin {
     func handleRedirectUri(url: URL) -> Bool {
         return InfomaniakLogin.checkResponse(url: url,
@@ -350,3 +357,4 @@ public extension InfomaniakLogin {
         webviewTimeOutMessage = timeOutMessage
     }
 }
+#endif

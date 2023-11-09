@@ -14,6 +14,7 @@
  limitations under the License.
  */
 
+#if canImport(UIKit)
 import InfomaniakDI
 import UIKit
 import WebKit
@@ -198,3 +199,4 @@ extension WebViewController: WKNavigationDelegate {
         timer?.invalidate()
     }
 }
+#endif

@@ -14,6 +14,7 @@
  limitations under the License.
  */
 
+#if canImport(UIKit)
 import InfomaniakCore
 import UIKit
 import WebKit
@@ -186,3 +187,4 @@ extension DeleteAccountViewController: WKNavigationDelegate {
         dismiss(animated: true)
     }
 }
+#endif
