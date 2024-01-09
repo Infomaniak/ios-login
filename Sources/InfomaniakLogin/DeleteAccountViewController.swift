@@ -15,7 +15,7 @@
  */
 
 #if canImport(UIKit)
-import InfomaniakCore
+import InfomaniakDI
 import UIKit
 import WebKit
 
@@ -25,6 +25,8 @@ public protocol DeleteAccountDelegate: AnyObject {
 }
 
 public class DeleteAccountViewController: UIViewController {
+    @LazyInjectService var infomaniakLogin: InfomaniakLoginable
+    
     private var webView: WKWebView!
     private var progressView: UIProgressView!
     public var navBarColor: UIColor?
@@ -142,7 +144,7 @@ extension DeleteAccountViewController: WKNavigationDelegate {
     ) {
         if let url = navigationAction.request.url {
             let urlString = url.absoluteString
-            if urlString.starts(with: Constants.LOGIN_URL) {
+            if url.host == infomaniakLogin.config.loginURL.host {
                 decisionHandler(.allow)
                 dismiss(animated: true)
                 if !accountDeleted {

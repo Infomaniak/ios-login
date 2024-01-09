@@ -16,13 +16,20 @@
 
 import AuthenticationServices
 import CommonCrypto
-import InfomaniakCore
 import InfomaniakDI
 import SafariServices
 import WebKit
 #if canImport(UIKit)
 import UIKit
 #endif
+
+public enum Constants {
+    public static let DELETEACCOUNT_URL =
+        "https://manager.infomaniak.com/v3/ng/profile/user/dashboard?open-terminate-account-modal"
+    public static func autologinUrl(to destination: String) -> URL? {
+        return URL(string: "https://manager.infomaniak.com/v3/mobile_login/?url=\(destination)")
+    }
+}
 
 /// Login delegation
 public protocol InfomaniakLoginDelegate: AnyObject {
@@ -32,11 +39,14 @@ public protocol InfomaniakLoginDelegate: AnyObject {
 
 /// Something that can authentify with Infomaniak
 public protocol InfomaniakLoginable {
+    var config: InfomaniakLogin.Config { get }
+
+    @available(iOS 13.0, *)
     func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor,
                                       useEphemeralSession: Bool,
                                       hideCreateAccountButton: Bool,
                                       completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void)
-
+    @available(iOS 13.0, *)
     func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor,
                                       useEphemeralSession: Bool,
                                       hideCreateAccountButton: Bool,
@@ -69,9 +79,6 @@ public protocol InfomaniakTokenable {
     /// Get an api token async (callback on background thread)
     func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void)
 
-    /// Get an api token async from an application password (callback on background thread)
-    func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void)
-
     /// Refresh api token async (callback on background thread)
     func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void)
 
@@ -93,9 +100,9 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
 public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     let networkLogin: InfomaniakNetworkLoginable
 
-    private var delegate: InfomaniakLoginDelegate?
+    public let config: Config
 
-    private let config: Config
+    private var delegate: InfomaniakLoginDelegate?
 
     private var codeChallenge: String!
     private var codeChallengeMethod: String!
@@ -118,11 +125,10 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
 
     public init(config: Config) {
         self.config = config
-        networkLogin = InfomaniakNetworkLogin(clientId: config.clientId,
-                                              loginUrl: config.loginURL.path,
-                                              redirectUri: config.redirectURI)
+        networkLogin = InfomaniakNetworkLogin(config: config)
     }
 
+    @available(iOS 13.0, *)
     public func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
                                              useEphemeralSession: Bool = false,
                                              hideCreateAccountButton: Bool = true,
@@ -155,6 +161,7 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
         session.start()
     }
 
+    @available(iOS 13.0, *)
     public func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
                                              useEphemeralSession: Bool = false,
                                              hideCreateAccountButton: Bool = true,
@@ -175,10 +182,6 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
 
     public func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
         networkLogin.getApiTokenUsing(code: code, codeVerifier: codeVerifier, completion: completion)
-    }
-
-    public func getApiToken(username: String, applicationPassword: String, completion: @escaping (ApiToken?, Error?) -> Void) {
-        networkLogin.getApiToken(username: username, applicationPassword: applicationPassword, completion: completion)
     }
 
     public func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
