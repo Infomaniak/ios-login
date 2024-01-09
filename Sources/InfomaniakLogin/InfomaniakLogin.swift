@@ -95,9 +95,7 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
 
     private var delegate: InfomaniakLoginDelegate?
 
-    private var clientId: String!
-    private var loginBaseUrl: String!
-    private var redirectUri: String!
+    private let config: Config
 
     private var codeChallenge: String!
     private var codeChallengeMethod: String!
@@ -118,15 +116,11 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     private var webviewTimeOutMessage: String?
     #endif
 
-    public init(clientId: String,
-                loginUrl: String = Constants.LOGIN_URL,
-                redirectUri: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect") {
-        loginBaseUrl = loginUrl
-        self.clientId = clientId
-        self.redirectUri = redirectUri
-        networkLogin = InfomaniakNetworkLogin(clientId: clientId,
-                                              loginUrl: loginUrl,
-                                              redirectUri: redirectUri)
+    public init(config: Config) {
+        self.config = config
+        networkLogin = InfomaniakNetworkLogin(clientId: config.clientId,
+                                              loginUrl: config.loginURL.path,
+                                              redirectUri: config.redirectURI)
     }
 
     public func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
@@ -137,7 +131,7 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
         generatePkceCodes()
 
         guard let loginUrl = generateUrl(),
-              let callbackUrl = URL(string: redirectUri),
+              let callbackUrl = URL(string: config.redirectURI),
               let callbackUrlScheme = callbackUrl.scheme else {
             return
         }
@@ -210,23 +204,24 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     // MARK: - Private
 
     private func generatePkceCodes() {
-        codeChallengeMethod = Constants.HASH_MODE_SHORT
+        codeChallengeMethod = config.hashModeShort
         codeVerifier = generateCodeVerifier()
         codeChallenge = generateCodeChallenge(codeVerifier: codeVerifier)
     }
 
     /// Generate the complete login URL based on parameters and base
     private func generateUrl() -> URL? {
-        var urlComponents = URLComponents(string: loginBaseUrl)
+        var urlComponents = URLComponents(url: config.loginURL, resolvingAgainstBaseURL: true)
         urlComponents?.path = "/authorize"
         urlComponents?.queryItems = [
-            URLQueryItem(name: "response_type", value: Constants.RESPONSE_TYPE),
-            URLQueryItem(name: "access_type", value: Constants.ACCESS_TYPE),
-            URLQueryItem(name: "client_id", value: clientId),
-            URLQueryItem(name: "redirect_uri", value: redirectUri),
+            URLQueryItem(name: "response_type", value: config.responseType.rawValue),
+            URLQueryItem(name: "access_type", value: config.accessType.rawValue),
+            URLQueryItem(name: "client_id", value: config.clientId),
+            URLQueryItem(name: "redirect_uri", value: config.redirectURI),
             URLQueryItem(name: "code_challenge_method", value: codeChallengeMethod),
             URLQueryItem(name: "code_challenge", value: codeChallenge)
         ]
+
         if hideCreateAccountButton {
             urlComponents?.queryItems?.append(URLQueryItem(name: "hide_create_account", value: ""))
         }
@@ -334,7 +329,7 @@ public extension InfomaniakLogin {
         }
 
         webViewController?.urlRequest = urlRequest
-        webViewController?.redirectUri = redirectUri
+        webViewController?.redirectUri = config.redirectURI
         webViewController?.clearCookie = clearCookie
         webViewController?.navBarTitle = webviewNavbarTitle
         webViewController?.navBarTitleColor = webviewNavbarTitleColor
