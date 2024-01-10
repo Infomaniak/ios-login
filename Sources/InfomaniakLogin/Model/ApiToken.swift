@@ -16,14 +16,14 @@
 
 import Foundation
 
-@objc public class ApiToken: NSObject, Codable {
-    @objc public var accessToken: String
-    @objc public var expiresIn: Int
-    @objc public var refreshToken: String
-    @objc public var scope: String
-    @objc public var tokenType: String
-    @objc public var userId: Int
-    @objc public var expirationDate: Date
+public class ApiToken: NSObject, Codable {
+    public let accessToken: String
+    public let expiresIn: Int
+    public let refreshToken: String
+    public let scope: String
+    public let tokenType: String
+    public let userId: Int
+    public let expirationDate: Date
 
     enum CodingKeys: String, CodingKey {
         case accessToken = "access_token"
