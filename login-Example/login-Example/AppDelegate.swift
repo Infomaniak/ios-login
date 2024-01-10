@@ -42,7 +42,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
             let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
             let redirectUri = "com.infomaniak.drive://oauth2redirect"
-            let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri))
+            let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri, accessType: .none))
             return login
         })
 
