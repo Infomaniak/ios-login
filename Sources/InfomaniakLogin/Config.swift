@@ -31,7 +31,7 @@ public extension InfomaniakLogin {
         let loginURL: URL
         let redirectURI: String
         let responseType: ResponseType
-        let accessType: AccessType
+        let accessType: AccessType?
         let hashMode: String
         let hashModeShort: String
 
@@ -50,7 +50,7 @@ public extension InfomaniakLogin {
             loginURL: URL = URL(string: "https://login.infomaniak.com/")!,
             redirectURI: String = "\(Bundle.main.bundleIdentifier ?? "")://oauth2redirect",
             responseType: ResponseType = .code,
-            accessType: AccessType = .offline,
+            accessType: AccessType? = .offline,
             hashMode: String = "SHA-256",
             hashModeShort: String = "S256"
         ) {
