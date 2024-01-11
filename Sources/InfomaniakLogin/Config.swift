@@ -17,6 +17,7 @@
 import Foundation
 
 public enum AccessType: String {
+    /// When using `offline` accessToken has an expiration date and a refresh token is returned by the back-end
     case offline
 }
 
@@ -34,6 +35,16 @@ public extension InfomaniakLogin {
         let hashMode: String
         let hashModeShort: String
 
+        /// Initializes an OAuth2 configuration for a given Infomaniak client app
+        ///
+        /// - Parameters:
+        ///   - clientId: An identifier provided by the backend.
+        ///   - loginURL: Base URL for login calls, defaults to production. Can be replaced with preprod.
+        ///   - redirectURI: Should match the app bundle ID.
+        ///   - responseType: The response type, currently only supports `.code`.
+        ///   - accessType: Use `.offline` for refresh token-based auth, `.none` or `nil` for non expiring token.
+        ///   - hashMode: The hash mode, defaults to "SHA-256".
+        ///   - hashModeShort: A short version of the hash mode, defaults to "S256".
         public init(
             clientId: String,
             loginURL: URL = URL(string: "https://login.infomaniak.com/")!,
