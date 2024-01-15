@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/Alamofire/Alamofire",
         "state": {
           "branch": null,
-          "revision": "78424be314842833c04bc3bef5b72e85fff99204",
-          "version": "5.6.4"
+          "revision": "3dc6a42c7727c49bf26508e29b0a0b35f9c7e1ad",
+          "version": "5.8.1"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/Infomaniak/ios-core",
         "state": {
           "branch": null,
-          "revision": "63012ec35e0452e87245217b2df28974a784344b",
-          "version": "4.1.24"
+          "revision": "504932a51c978b6aa0bbc086054875a36241674e",
+          "version": "5.0.1"
         }
       },
       {
@@ -33,17 +33,8 @@
         "repositoryURL": "https://github.com/Infomaniak/ios-dependency-injection",
         "state": {
           "branch": null,
-          "revision": "b4d872b5baf5d6f19b98fdfd765205c57870d02e",
-          "version": "1.1.11"
-        }
-      },
-      {
-        "package": "MatomoTracker",
-        "repositoryURL": "https://github.com/matomo-org/matomo-sdk-ios",
-        "state": {
-          "branch": null,
-          "revision": "15a645e11eaa8053f93749d73ced03da1e56fd01",
-          "version": "7.5.2"
+          "revision": "8dc9e67e6d3d9f4f5bd02d693a7ce1f93b125bcd",
+          "version": "2.0.1"
         }
       },
       {
@@ -51,8 +42,8 @@
         "repositoryURL": "https://github.com/realm/realm-core.git",
         "state": {
           "branch": null,
-          "revision": "b77443ca7fa25407869ca537bf3ae912b1427bff",
-          "version": "12.13.0"
+          "revision": "7227d6a447821c28895daa099b6c7cd4c99d461b",
+          "version": "13.25.1"
         }
       },
       {
@@ -60,8 +51,8 @@
         "repositoryURL": "https://github.com/realm/realm-swift",
         "state": {
           "branch": null,
-          "revision": "b1072f3ef733108dfcc62c2001781e5d65605fbf",
-          "version": "10.34.1"
+          "revision": "836cc4b8619886f979f8961c3f592a82b0741591",
+          "version": "10.45.3"
         }
       },
       {
@@ -69,8 +60,8 @@
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
         "state": {
           "branch": null,
-          "revision": "66e7c6921261acb1fd9461edbaf5899378711c56",
-          "version": "8.15.1"
+          "revision": "3b9a8e69ca296bd8cd0e317ad7a448e5daf4a342",
+          "version": "8.18.0"
         }
       },
       {

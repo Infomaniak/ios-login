@@ -15,7 +15,7 @@ let package = Package(
                     targets: ["InfomaniakLogin"]),
         ],
         dependencies: [
-            .package(url: "https://github.com/Infomaniak/ios-core", .upToNextMajor(from: "4.0.0")),
+            .package(url: "https://github.com/Infomaniak/ios-core", .upToNextMajor(from: "5.0.1")),
         ],
         targets: [
             .target(
