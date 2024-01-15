@@ -2,75 +2,12 @@
   "object": {
     "pins": [
       {
-        "package": "Alamofire",
-        "repositoryURL": "https://github.com/Alamofire/Alamofire",
-        "state": {
-          "branch": null,
-          "revision": "3dc6a42c7727c49bf26508e29b0a0b35f9c7e1ad",
-          "version": "5.8.1"
-        }
-      },
-      {
-        "package": "CocoaLumberjack",
-        "repositoryURL": "https://github.com/CocoaLumberjack/CocoaLumberjack",
-        "state": {
-          "branch": null,
-          "revision": "363ed23d19a931809ea834a7d722da830353806a",
-          "version": "3.8.2"
-        }
-      },
-      {
-        "package": "InfomaniakCore",
-        "repositoryURL": "https://github.com/Infomaniak/ios-core",
-        "state": {
-          "branch": null,
-          "revision": "504932a51c978b6aa0bbc086054875a36241674e",
-          "version": "5.0.1"
-        }
-      },
-      {
         "package": "InfomaniakDI",
         "repositoryURL": "https://github.com/Infomaniak/ios-dependency-injection",
         "state": {
           "branch": null,
           "revision": "8dc9e67e6d3d9f4f5bd02d693a7ce1f93b125bcd",
           "version": "2.0.1"
-        }
-      },
-      {
-        "package": "RealmDatabase",
-        "repositoryURL": "https://github.com/realm/realm-core.git",
-        "state": {
-          "branch": null,
-          "revision": "7227d6a447821c28895daa099b6c7cd4c99d461b",
-          "version": "13.25.1"
-        }
-      },
-      {
-        "package": "Realm",
-        "repositoryURL": "https://github.com/realm/realm-swift",
-        "state": {
-          "branch": null,
-          "revision": "836cc4b8619886f979f8961c3f592a82b0741591",
-          "version": "10.45.3"
-        }
-      },
-      {
-        "package": "Sentry",
-        "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
-        "state": {
-          "branch": null,
-          "revision": "3b9a8e69ca296bd8cd0e317ad7a448e5daf4a342",
-          "version": "8.18.0"
-        }
-      },
-      {
-        "package": "swift-log",
-        "repositoryURL": "https://github.com/apple/swift-log.git",
-        "state": {
-          "branch": null,
-          "revision": "532d8b529501fb73a2455b179e0bbb6d49b652ed",
-          "version": "1.5.3"
         }
       }
     ]
