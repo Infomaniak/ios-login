@@ -48,7 +48,7 @@ public class DeleteAccountViewController: UIViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        if let url = Constants.autologinUrl(to: Constants.DELETEACCOUNT_URL) {
+        if let url = Constants.autologinUrl(to: Constants.deleteAccountURL) {
             if let accessToken = accessToken {
                 var request = URLRequest(url: url)
                 request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")

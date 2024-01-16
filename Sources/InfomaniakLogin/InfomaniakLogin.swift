@@ -24,7 +24,7 @@ import UIKit
 #endif
 
 public enum Constants {
-    public static let DELETEACCOUNT_URL =
+    public static let deleteAccountURL =
         "https://manager.infomaniak.com/v3/ng/profile/user/dashboard?open-terminate-account-modal"
     public static func autologinUrl(to destination: String) -> URL? {
         return URL(string: "https://manager.infomaniak.com/v3/mobile_login/?url=\(destination)")
