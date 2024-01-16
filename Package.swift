@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
         name: "InfomaniakLogin",
         platforms: [
-            .iOS(.v13),
+            .iOS(.v12),
             .macOS(.v11)
         ],
         products: [
@@ -15,13 +15,13 @@ let package = Package(
                     targets: ["InfomaniakLogin"]),
         ],
         dependencies: [
-            .package(url: "https://github.com/Infomaniak/ios-core", .upToNextMajor(from: "5.0.1")),
+            .package(url: "https://github.com/Infomaniak/ios-dependency-injection", .upToNextMajor(from: "2.0.0")),
         ],
         targets: [
             .target(
                     name: "InfomaniakLogin",
                     dependencies: [
-                        .product(name: "InfomaniakCore", package: "ios-core"),
+                        .product(name: "InfomaniakDI", package: "ios-dependency-injection"),
                     ]),
             .testTarget(
                     name: "InfomaniakLoginTests",
