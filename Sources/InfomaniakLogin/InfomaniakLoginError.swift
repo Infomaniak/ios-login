@@ -25,6 +25,7 @@ public enum InfomaniakLoginError: LocalizedError {
     case navigationCancelled(HTTPStatusCode?, URL?)
     case invalidAccessToken(AccessToken?)
     case invalidUrl
+    case noRefreshToken
 
     public var errorDescription: String? {
         switch self {
@@ -38,6 +39,8 @@ public enum InfomaniakLoginError: LocalizedError {
             return "Invalid access token"
         case .invalidUrl:
             return "Invalid url"
+        case .noRefreshToken:
+            return "No refresh token"
         }
     }
 }

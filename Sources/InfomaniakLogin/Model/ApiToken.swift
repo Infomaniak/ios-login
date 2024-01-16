@@ -18,12 +18,12 @@ import Foundation
 
 public class ApiToken: NSObject, Codable {
     public let accessToken: String
-    public let expiresIn: Int
-    public let refreshToken: String
+    public let refreshToken: String?
     public let scope: String
     public let tokenType: String
     public let userId: Int
-    public let expirationDate: Date
+    public let expiresIn: Int?
+    public let expirationDate: Date?
 
     enum CodingKeys: String, CodingKey {
         case accessToken = "access_token"
@@ -38,14 +38,19 @@ public class ApiToken: NSObject, Codable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         accessToken = try values.decode(String.self, forKey: .accessToken)
-        expiresIn = try values.decode(Int.self, forKey: .expiresIn)
-        refreshToken = try values.decode(String.self, forKey: .refreshToken)
+        let maybeExpiresIn = try values.decodeIfPresent(Int.self, forKey: .expiresIn)
+        expiresIn = maybeExpiresIn
+        refreshToken = try values.decodeIfPresent(String.self, forKey: .refreshToken)
         scope = try values.decode(String.self, forKey: .scope)
         tokenType = try values.decode(String.self, forKey: .tokenType)
         userId = try values.decode(Int.self, forKey: .userId)
 
-        let newExpirationDate = Date().addingTimeInterval(TimeInterval(Double(expiresIn)))
-        expirationDate = try values.decodeIfPresent(Date.self, forKey: .expirationDate) ?? newExpirationDate
+        if let maybeExpiresIn {
+            let newExpirationDate = Date().addingTimeInterval(TimeInterval(Double(maybeExpiresIn)))
+            expirationDate = try values.decodeIfPresent(Date.self, forKey: .expirationDate) ?? newExpirationDate
+        } else {
+            expirationDate = nil
+        }
     }
 
     public init(
@@ -75,7 +80,8 @@ public extension ApiToken {
     }
 
     var truncatedRefreshToken: String {
-        truncateToken(refreshToken)
+        guard let refreshToken else { return "" }
+        return truncateToken(refreshToken)
     }
 
     internal func truncateToken(_ token: String) -> String {

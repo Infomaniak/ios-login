@@ -57,13 +57,23 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
     }
 
     public func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
+        guard let refreshToken = token.refreshToken else {
+            completion(nil, InfomaniakLoginError.noRefreshToken)
+            return
+        }
+
         var request = URLRequest(url: tokenApiURL)
 
-        let parameterDictionary: [String: Any] = [
+        var parameterDictionary: [String: Any] = [
             "grant_type": "refresh_token",
             "client_id": config.clientId,
-            "refresh_token": token.refreshToken
+            "refresh_token": refreshToken
         ]
+
+        if config.accessType == .none {
+            parameterDictionary["duration"] = "infinite"
+        }
+
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = parameterDictionary.percentEncoded()

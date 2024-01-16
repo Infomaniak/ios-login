@@ -218,12 +218,15 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
         urlComponents?.path = "/authorize"
         urlComponents?.queryItems = [
             URLQueryItem(name: "response_type", value: config.responseType.rawValue),
-            URLQueryItem(name: "access_type", value: config.accessType.rawValue),
             URLQueryItem(name: "client_id", value: config.clientId),
             URLQueryItem(name: "redirect_uri", value: config.redirectURI),
             URLQueryItem(name: "code_challenge_method", value: codeChallengeMethod),
             URLQueryItem(name: "code_challenge", value: codeChallenge)
         ]
+
+        if let accessType = config.accessType?.rawValue {
+            urlComponents?.queryItems?.append(URLQueryItem(name: "access_type", value: accessType))
+        }
 
         if hideCreateAccountButton {
             urlComponents?.queryItems?.append(URLQueryItem(name: "hide_create_account", value: ""))
