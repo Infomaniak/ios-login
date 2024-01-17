@@ -27,13 +27,13 @@ public enum ResponseType: String {
 
 public extension InfomaniakLogin {
     struct Config {
-        let clientId: String
-        let loginURL: URL
-        let redirectURI: String
-        let responseType: ResponseType
-        let accessType: AccessType?
-        let hashMode: String
-        let hashModeShort: String
+        public let clientId: String
+        public let loginURL: URL
+        public let redirectURI: String
+        public let responseType: ResponseType
+        public let accessType: AccessType?
+        public let hashMode: String
+        public let hashModeShort: String
 
         /// Initializes an OAuth2 configuration for a given Infomaniak client app
         ///
