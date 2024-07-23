@@ -20,8 +20,8 @@ import InfomaniakLogin
 import UIKit
 
 class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDelegate {
-    @InjectService var loginService: InfomaniakLoginable
-    @InjectService var tokenService: InfomaniakTokenable
+    @LazyInjectService var loginService: InfomaniakLoginable
+    @LazyInjectService var tokenService: InfomaniakTokenable
 
     func didCompleteDeleteAccount() {
         showAlert(title: "Account deleted", message: nil)
