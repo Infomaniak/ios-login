@@ -21,7 +21,7 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
-    @InjectService var loginService: InfomaniakLoginable
+    @LazyInjectService var loginService: InfomaniakLoginable
 
     func scene(_ scene: UIScene,
                willConnectTo session: UISceneSession,

@@ -20,7 +20,7 @@ import UIKit
 import WebKit
 
 class WebViewController: UIViewController, WKUIDelegate {
-    @InjectService var infomaniakLogin: InfomaniakLoginable
+    @LazyInjectService var infomaniakLogin: InfomaniakLoginable
 
     var clearCookie: Bool!
     var navBarButtonColor: UIColor?
