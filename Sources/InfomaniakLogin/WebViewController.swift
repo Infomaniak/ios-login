@@ -79,7 +79,9 @@ class WebViewController: UIViewController, WKUIDelegate {
 
     private func setupEstimatedProgressObserver() {
         estimatedProgressObserver = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] webView, _ in
-            self?.progressView.progress = Float(webView.estimatedProgress)
+            Task { @MainActor [weak self] in
+                self?.progressView.progress = Float(webView.estimatedProgress)
+            }
         }
     }
 
@@ -162,7 +164,7 @@ extension WebViewController: WKNavigationDelegate {
     public func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
-        decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void
+        decisionHandler: @MainActor (WKNavigationActionPolicy) -> Swift.Void
     ) {
         if let host = navigationAction.request.url?.host {
             if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {

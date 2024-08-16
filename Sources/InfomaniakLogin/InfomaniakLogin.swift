@@ -42,27 +42,33 @@ public protocol InfomaniakLoginable {
     var config: InfomaniakLogin.Config { get }
 
     @available(iOS 13.0, *)
+    @MainActor
     func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor,
                                       useEphemeralSession: Bool,
                                       hideCreateAccountButton: Bool,
                                       completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void)
     @available(iOS 13.0, *)
+    @MainActor
     func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor,
                                       useEphemeralSession: Bool,
                                       hideCreateAccountButton: Bool,
                                       delegate: InfomaniakLoginDelegate?)
 
     #if canImport(UIKit)
+    @MainActor
     func handleRedirectUri(url: URL) -> Bool
 
+    @MainActor
     func loginFrom(viewController: UIViewController,
                    hideCreateAccountButton: Bool,
                    delegate: InfomaniakLoginDelegate?)
 
+    @MainActor
     func webviewLoginFrom(viewController: UIViewController,
                           hideCreateAccountButton: Bool,
                           delegate: InfomaniakLoginDelegate?)
 
+    @MainActor
     func setupWebviewNavbar(title: String?,
                             titleColor: UIColor?,
                             color: UIColor?,
@@ -70,6 +76,7 @@ public protocol InfomaniakLoginable {
                             clearCookie: Bool,
                             timeOutMessage: String?)
 
+    @MainActor
     func webviewHandleRedirectUri(url: URL) -> Bool
     #endif
 }
@@ -77,15 +84,16 @@ public protocol InfomaniakLoginable {
 /// Something that can handle tokens
 public protocol InfomaniakTokenable {
     /// Get an api token async (callback on background thread)
-    func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void)
+    func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (ApiToken?, Error?) -> Void)
 
     /// Refresh api token async (callback on background thread)
-    func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void)
+    func refreshToken(token: ApiToken, completion: @Sendable @escaping (ApiToken?, Error?) -> Void)
 
     /// Delete an api token async
-    func deleteApiToken(token: ApiToken, onError: @escaping (Error) -> Void)
+    func deleteApiToken(token: ApiToken, onError: @Sendable @escaping (Error) -> Void)
 }
 
+@MainActor
 class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProviding {
     private let anchor: ASPresentationAnchor
     init(anchor: ASPresentationAnchor) {
@@ -129,6 +137,7 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
     }
 
     @available(iOS 13.0, *)
+    @MainActor
     public func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor = ASPresentationAnchor(),
                                              useEphemeralSession: Bool = false,
                                              hideCreateAccountButton: Bool = true,
@@ -180,15 +189,15 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
 
     // MARK: - InfomaniakTokenable
 
-    public func getApiTokenUsing(code: String, codeVerifier: String, completion: @escaping (ApiToken?, Error?) -> Void) {
+    public func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
         networkLogin.getApiTokenUsing(code: code, codeVerifier: codeVerifier, completion: completion)
     }
 
-    public func refreshToken(token: ApiToken, completion: @escaping (ApiToken?, Error?) -> Void) {
+    public func refreshToken(token: ApiToken, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
         networkLogin.refreshToken(token: token, completion: completion)
     }
 
-    public func deleteApiToken(token: ApiToken, onError: @escaping (Error) -> Void) {
+    public func deleteApiToken(token: ApiToken, onError: @Sendable @escaping (Error) -> Void) {
         networkLogin.deleteApiToken(token: token, onError: onError)
     }
 
@@ -270,6 +279,7 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
 
 #if canImport(UIKit)
 public extension InfomaniakLogin {
+    @MainActor
     func handleRedirectUri(url: URL) -> Bool {
         return InfomaniakLogin.checkResponse(url: url,
                                              onSuccess: { code in
@@ -284,6 +294,7 @@ public extension InfomaniakLogin {
                                              })
     }
 
+    @MainActor
     func webviewHandleRedirectUri(url: URL) -> Bool {
         return InfomaniakLogin.checkResponse(url: url,
                                              onSuccess: { code in
@@ -298,6 +309,7 @@ public extension InfomaniakLogin {
                                              })
     }
 
+    @MainActor
     func loginFrom(viewController: UIViewController,
                    hideCreateAccountButton: Bool = true,
                    delegate: InfomaniakLoginDelegate? = nil) {
@@ -313,6 +325,7 @@ public extension InfomaniakLogin {
         viewController.present(safariViewController!, animated: true)
     }
 
+    @MainActor
     func webviewLoginFrom(viewController: UIViewController,
                           hideCreateAccountButton: Bool = true,
                           delegate: InfomaniakLoginDelegate? = nil) {
@@ -344,6 +357,7 @@ public extension InfomaniakLogin {
         webViewController?.timeOutMessage = webviewTimeOutMessage
     }
 
+    @MainActor
     func setupWebviewNavbar(title: String?,
                             titleColor: UIColor?,
                             color: UIColor?,

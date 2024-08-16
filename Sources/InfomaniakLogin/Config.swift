@@ -16,17 +16,17 @@
 
 import Foundation
 
-public enum AccessType: String {
+@frozen public enum AccessType: String {
     /// When using `offline` accessToken has an expiration date and a refresh token is returned by the back-end
     case offline
 }
 
-public enum ResponseType: String {
+@frozen public enum ResponseType: String {
     case code
 }
 
 public extension InfomaniakLogin {
-    struct Config {
+    @frozen struct Config {
         public let clientId: String
         public let loginURL: URL
         public let redirectURI: String
