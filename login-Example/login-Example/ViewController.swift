@@ -47,11 +47,11 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                 title = "Login error"
                 description = error.localizedDescription
             }
-            if let title = title,
-               let description = description {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.showAlert(title: title, message: description)
-                }
+
+            guard let title, let description else { return }
+
+            Task { @MainActor in
+                self.showAlert(title: title, message: description)
             }
         }
     }
@@ -63,14 +63,13 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
             switch result {
             case .success((let code, let verifier)):
                 self.tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, _ in
-                    if let token = token {
-                        DispatchQueue.main.async {
-                            let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(
-                                delegate: self,
-                                accessToken: token.accessToken
-                            )
-                            self.present(deleteAccountViewController, animated: true)
-                        }
+                    guard let token else { return }
+                    Task { @MainActor in
+                        let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(
+                            delegate: self,
+                            accessToken: token.accessToken
+                        )
+                        self.present(deleteAccountViewController, animated: true)
                     }
                 }
             case .failure:
@@ -152,14 +151,14 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                     print("refreshTokenConvert \(title ?? "")\n\(description ?? "")")
                 }
             case .failure(let failure):
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                Task { @MainActor in
                     self.showAlert(title: "Error", message: failure.localizedDescription)
                 }
             }
         }
     }
 
-    func testSwapRefreshToken(apiToken: ApiToken) {
+    nonisolated func testSwapRefreshToken(apiToken: ApiToken) {
         SimpleResolver.sharedResolver.removeAll()
         // Init with infinite refresh token
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
@@ -188,11 +187,11 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                 title = "Login error"
                 description = error.localizedDescription
             }
-            if let title = title,
-               let description = description {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.showAlert(title: title, message: description)
-                }
+
+            guard let title, let description else { return }
+
+            Task { @MainActor in
+                self.showAlert(title: title, message: description)
             }
         }
     }
