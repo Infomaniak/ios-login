@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "InfomaniakLogin",
     platforms: [
-        .iOS(.v12),
-        .macOS(.v11)
+        .iOS(.v13),
+        .macOS(.v12)
     ],
     products: [
         .library(

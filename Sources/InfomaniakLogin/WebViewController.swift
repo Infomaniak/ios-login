@@ -88,25 +88,15 @@ class WebViewController: UIViewController, WKUIDelegate {
     func setupNavBar() {
         title = navBarTitle ?? "login.infomaniak.com"
 
-        if #available(iOS 13.0, *) {
-            let navigationAppearance = UINavigationBarAppearance()
-            navigationAppearance.configureWithDefaultBackground()
-            if let navBarColor = navBarColor {
-                navigationAppearance.backgroundColor = navBarColor
-            }
-            if let navBarTitleColor = navBarTitleColor {
-                navigationAppearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
-            }
-            self.navigationController?.navigationBar.standardAppearance = navigationAppearance
-        } else {
-            if let navBarColor = navBarColor {
-                navigationController?.navigationBar.backgroundColor = navBarColor
-            }
-            if let navBarTitleColor = navBarTitleColor {
-                navigationController?.navigationBar
-                    .titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
-            }
+        let navigationAppearance = UINavigationBarAppearance()
+        navigationAppearance.configureWithDefaultBackground()
+        if let navBarColor = navBarColor {
+            navigationAppearance.backgroundColor = navBarColor
         }
+        if let navBarTitleColor = navBarTitleColor {
+            navigationAppearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
+        }
+        navigationController?.navigationBar.standardAppearance = navigationAppearance
 
         let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(doneButtonPressed))
         if let navBarButtonColor = navBarButtonColor {

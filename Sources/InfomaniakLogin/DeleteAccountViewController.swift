@@ -80,16 +80,12 @@ public class DeleteAccountViewController: UIViewController {
     }
 
     private func setupNavBar() {
-        if #available(iOS 13.0, *) {
-            let navigationAppearance = UINavigationBarAppearance()
-            navigationAppearance.configureWithDefaultBackground()
-            if let navBarColor = navBarColor {
-                navigationAppearance.backgroundColor = navBarColor
-            }
-            self.navigationController?.navigationBar.standardAppearance = navigationAppearance
-        } else if let navBarColor = navBarColor {
-            navigationController?.navigationBar.backgroundColor = navBarColor
+        let navigationAppearance = UINavigationBarAppearance()
+        navigationAppearance.configureWithDefaultBackground()
+        if let navBarColor = navBarColor {
+            navigationAppearance.backgroundColor = navBarColor
         }
+        navigationController?.navigationBar.standardAppearance = navigationAppearance
 
         let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(close))
         if let navBarButtonColor = navBarButtonColor {
