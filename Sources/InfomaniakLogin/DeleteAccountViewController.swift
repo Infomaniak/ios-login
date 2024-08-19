@@ -47,20 +47,22 @@ public class DeleteAccountViewController: UIViewController {
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-
-        if let url = Constants.autologinUrl(to: Constants.deleteAccountURL) {
-            if let accessToken = accessToken {
-                var request = URLRequest(url: url)
-                request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-                webView.load(request)
-            } else {
-                delegate?.didFailDeleteAccount(error: .invalidAccessToken(accessToken))
-                dismiss(animated: true)
-            }
-        } else {
+    
+        guard let url = Constants.autologinUrl(to: Constants.deleteAccountURL) else {
             delegate?.didFailDeleteAccount(error: .invalidUrl)
             dismiss(animated: true)
+            return
         }
+    
+        guard let accessToken = accessToken else {
+            delegate?.didFailDeleteAccount(error: .invalidAccessToken(accessToken))
+            dismiss(animated: true)
+            return
+        }
+    
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        webView.load(request)
     }
 
     public static func instantiateInViewController(
