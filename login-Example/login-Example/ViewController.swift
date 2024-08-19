@@ -113,7 +113,10 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
         alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
             self.dismiss(animated: true, completion: nil)
         })
-        present(alertController, animated: true, completion: nil)
+        Task {
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            self.present(alertController, animated: true, completion: nil)
+        }
     }
 
     @IBAction func refreshTokenConvert(_ sender: Any) {
