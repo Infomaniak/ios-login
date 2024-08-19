@@ -79,32 +79,24 @@ class WebViewController: UIViewController, WKUIDelegate {
 
     private func setupEstimatedProgressObserver() {
         estimatedProgressObserver = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] webView, _ in
-            self?.progressView.progress = Float(webView.estimatedProgress)
+            Task { @MainActor [weak self] in
+                self?.progressView.progress = Float(webView.estimatedProgress)
+            }
         }
     }
 
     func setupNavBar() {
         title = navBarTitle ?? "login.infomaniak.com"
 
-        if #available(iOS 13.0, *) {
-            let navigationAppearance = UINavigationBarAppearance()
-            navigationAppearance.configureWithDefaultBackground()
-            if let navBarColor = navBarColor {
-                navigationAppearance.backgroundColor = navBarColor
-            }
-            if let navBarTitleColor = navBarTitleColor {
-                navigationAppearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
-            }
-            self.navigationController?.navigationBar.standardAppearance = navigationAppearance
-        } else {
-            if let navBarColor = navBarColor {
-                navigationController?.navigationBar.backgroundColor = navBarColor
-            }
-            if let navBarTitleColor = navBarTitleColor {
-                navigationController?.navigationBar
-                    .titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
-            }
+        let navigationAppearance = UINavigationBarAppearance()
+        navigationAppearance.configureWithDefaultBackground()
+        if let navBarColor = navBarColor {
+            navigationAppearance.backgroundColor = navBarColor
         }
+        if let navBarTitleColor = navBarTitleColor {
+            navigationAppearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleColor]
+        }
+        navigationController?.navigationBar.standardAppearance = navigationAppearance
 
         let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(doneButtonPressed))
         if let navBarButtonColor = navBarButtonColor {
@@ -162,7 +154,7 @@ extension WebViewController: WKNavigationDelegate {
     public func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
-        decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void
+        decisionHandler: @MainActor (WKNavigationActionPolicy) -> Swift.Void
     ) {
         if let host = navigationAction.request.url?.host {
             if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {

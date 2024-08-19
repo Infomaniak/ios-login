@@ -26,7 +26,7 @@ public protocol DeleteAccountDelegate: AnyObject {
 
 public class DeleteAccountViewController: UIViewController {
     @LazyInjectService var infomaniakLogin: InfomaniakLoginable
-    
+
     private var webView: WKWebView!
     private var progressView: UIProgressView!
     public var navBarColor: UIColor?
@@ -80,16 +80,12 @@ public class DeleteAccountViewController: UIViewController {
     }
 
     private func setupNavBar() {
-        if #available(iOS 13.0, *) {
-            let navigationAppearance = UINavigationBarAppearance()
-            navigationAppearance.configureWithDefaultBackground()
-            if let navBarColor = navBarColor {
-                navigationAppearance.backgroundColor = navBarColor
-            }
-            self.navigationController?.navigationBar.standardAppearance = navigationAppearance
-        } else if let navBarColor = navBarColor {
-            navigationController?.navigationBar.backgroundColor = navBarColor
+        let navigationAppearance = UINavigationBarAppearance()
+        navigationAppearance.configureWithDefaultBackground()
+        if let navBarColor = navBarColor {
+            navigationAppearance.backgroundColor = navBarColor
         }
+        navigationController?.navigationBar.standardAppearance = navigationAppearance
 
         let backButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(close))
         if let navBarButtonColor = navBarButtonColor {
@@ -115,9 +111,11 @@ public class DeleteAccountViewController: UIViewController {
         ])
 
         progressObserver = webView.observe(\.estimatedProgress, options: .new) { [weak self] _, value in
-            guard let newValue = value.newValue else { return }
-            self?.progressView.isHidden = newValue == 1
-            self?.progressView.setProgress(Float(newValue), animated: true)
+            Task { @MainActor [weak self] in
+                guard let newValue = value.newValue else { return }
+                self?.progressView.isHidden = newValue == 1
+                self?.progressView.setProgress(Float(newValue), animated: true)
+            }
         }
     }
 
@@ -140,7 +138,7 @@ extension DeleteAccountViewController: WKNavigationDelegate {
     public func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
-        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+        decisionHandler: @MainActor (WKNavigationActionPolicy) -> Void
     ) {
         if let url = navigationAction.request.url {
             let urlString = url.absoluteString
@@ -168,7 +166,7 @@ extension DeleteAccountViewController: WKNavigationDelegate {
     public func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationResponse: WKNavigationResponse,
-        decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+        decisionHandler: @MainActor (WKNavigationResponsePolicy) -> Void
     ) {
         guard let statusCode = (navigationResponse.response as? HTTPURLResponse)?.statusCode else {
             decisionHandler(.allow)

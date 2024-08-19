@@ -47,36 +47,33 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                 title = "Login error"
                 description = error.localizedDescription
             }
-            if let title = title,
-               let description = description {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.showAlert(title: title, message: description)
-                }
+
+            guard let title, let description else { return }
+
+            Task { @MainActor in
+                self.showAlert(title: title, message: description)
             }
         }
     }
 
     @IBAction func deleteAccount(_ sender: Any) {
-        if #available(iOS 13.0, *) {
-            loginService.asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor(),
-                                                      useEphemeralSession: true,
-                                                      hideCreateAccountButton: true) { result in
-                switch result {
-                case .success((let code, let verifier)):
-                    self.tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, _ in
-                        if let token = token {
-                            DispatchQueue.main.async {
-                                let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(
-                                    delegate: self,
-                                    accessToken: token.accessToken
-                                )
-                                self.present(deleteAccountViewController, animated: true)
-                            }
-                        }
+        loginService.asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor(),
+                                                  useEphemeralSession: true,
+                                                  hideCreateAccountButton: true) { result in
+            switch result {
+            case .success((let code, let verifier)):
+                self.tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, _ in
+                    guard let token else { return }
+                    Task { @MainActor in
+                        let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(
+                            delegate: self,
+                            accessToken: token.accessToken
+                        )
+                        self.present(deleteAccountViewController, animated: true)
                     }
-                case .failure:
-                    break
                 }
+            case .failure:
+                break
             }
         }
     }
@@ -100,12 +97,10 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
     }
 
     @IBAction func asWebAuthentication(_ sender: Any) {
-        if #available(iOS 13.0, *) {
-            loginService.asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor(),
-                                                      useEphemeralSession: false,
-                                                      hideCreateAccountButton: true,
-                                                      delegate: self)
-        }
+        loginService.asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor(),
+                                                  useEphemeralSession: false,
+                                                  hideCreateAccountButton: true,
+                                                  delegate: self)
     }
 
     func showAlert(title: String, message: String?) {
@@ -117,54 +112,53 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
     }
 
     @IBAction func refreshTokenConvert(_ sender: Any) {
-        if #available(iOS 13.0, *) {
-            SimpleResolver.sharedResolver.removeAll()
-            // Init with non infinite refresh token
-            SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
-                let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
-                let redirectUri = "com.infomaniak.drive://oauth2redirect"
-                let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri, accessType: .offline))
-                return login
-            })
-            SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
-                return try resolver.resolve(type: InfomaniakLoginable.self,
-                                            forCustomTypeIdentifier: nil,
-                                            factoryParameters: nil,
-                                            resolver: resolver)
-            })
+        SimpleResolver.sharedResolver.removeAll()
+        // Init with non infinite refresh token
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
+            let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+            let redirectUri = "com.infomaniak.drive://oauth2redirect"
+            let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri, accessType: .offline))
+            return login
+        })
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
+            return try resolver.resolve(type: InfomaniakLoginable.self,
+                                        forCustomTypeIdentifier: nil,
+                                        factoryParameters: nil,
+                                        resolver: resolver)
+        })
 
-            @InjectService var loginService: InfomaniakLoginable
-            @InjectService var tokenService: InfomaniakTokenable
+        @InjectService var loginService: InfomaniakLoginable
+        @InjectService var tokenService: InfomaniakTokenable
 
-            loginService.asWebAuthenticationLoginFrom(anchor: .init(),
-                                                      useEphemeralSession: false,
-                                                      hideCreateAccountButton: true) { result in
-                switch result {
-                case .success(let success):
-                    self.tokenService.getApiTokenUsing(code: success.code, codeVerifier: success.verifier) { token, error in
-                        var title: String?
-                        var description: String?
+        loginService.asWebAuthenticationLoginFrom(anchor: .init(),
+                                                  useEphemeralSession: false,
+                                                  hideCreateAccountButton: true) { result in
+            switch result {
+            case .success(let success):
+                self.tokenService.getApiTokenUsing(code: success.code, codeVerifier: success.verifier) { token, error in
+                    var title: String?
+                    var description: String?
 
-                        if let token = token {
-                            title = "Login completed"
-                            description = "UserId: \(token.userId)\nToken: \(token.accessToken)\nExpires in: \(token.expiresIn ?? -1)"
-                            self.testSwapRefreshToken(apiToken: token)
-                        } else if let error = error {
-                            title = "Login error"
-                            description = error.localizedDescription
-                        }
-                        print("refreshTokenConvert \(title ?? "")\n\(description ?? "")")
+                    if let token = token {
+                        title = "Login completed"
+                        description =
+                            "UserId: \(token.userId)\nToken: \(token.accessToken)\nExpires in: \(token.expiresIn ?? -1)"
+                        self.testSwapRefreshToken(apiToken: token)
+                    } else if let error = error {
+                        title = "Login error"
+                        description = error.localizedDescription
                     }
-                case .failure(let failure):
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        self.showAlert(title: "Error", message: failure.localizedDescription)
-                    }
+                    print("refreshTokenConvert \(title ?? "")\n\(description ?? "")")
+                }
+            case .failure(let failure):
+                Task { @MainActor in
+                    self.showAlert(title: "Error", message: failure.localizedDescription)
                 }
             }
         }
     }
-    
-    func testSwapRefreshToken(apiToken: ApiToken) {
+
+    nonisolated func testSwapRefreshToken(apiToken: ApiToken) {
         SimpleResolver.sharedResolver.removeAll()
         // Init with infinite refresh token
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
@@ -179,7 +173,7 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                                         factoryParameters: nil,
                                         resolver: resolver)
         })
-        
+
         @InjectService var loginService: InfomaniakLoginable
         @InjectService var tokenService: InfomaniakTokenable
 
@@ -193,11 +187,11 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                 title = "Login error"
                 description = error.localizedDescription
             }
-            if let title = title,
-               let description = description {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.showAlert(title: title, message: description)
-                }
+
+            guard let title, let description else { return }
+
+            Task { @MainActor in
+                self.showAlert(title: title, message: description)
             }
         }
     }

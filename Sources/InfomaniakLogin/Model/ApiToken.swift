@@ -16,7 +16,7 @@
 
 import Foundation
 
-public class ApiToken: NSObject, Codable {
+@frozen public struct ApiToken: Codable {
     public let accessToken: String
     public let refreshToken: String?
     public let scope: String
@@ -35,7 +35,7 @@ public class ApiToken: NSObject, Codable {
         case expirationDate
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         accessToken = try values.decode(String.self, forKey: .accessToken)
         let maybeExpiresIn = try values.decodeIfPresent(Int.self, forKey: .expiresIn)
