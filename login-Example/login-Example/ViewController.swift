@@ -35,15 +35,16 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
         showAlert(title: "Login Failed", message: error.localizedDescription)
     }
 
-    func didCompleteLoginWith(code: String, verifier: String) {
-        tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, error in
+    func didCompleteLoginWith(code: String, verifier: String) {        
+        tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { result in
             var title: String?
             var description: String?
 
-            if let token = token {
+            switch result {
+            case .success(let token):
                 title = "Login completed"
                 description = "UserId: \(token.userId)\nToken: \(token.accessToken)"
-            } else if let error = error {
+            case .failure(let error):
                 title = "Login error"
                 description = error.localizedDescription
             }
@@ -62,14 +63,18 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                                                   hideCreateAccountButton: true) { result in
             switch result {
             case .success((let code, let verifier)):
-                self.tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, _ in
-                    guard let token else { return }
-                    Task { @MainActor in
-                        let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(
-                            delegate: self,
-                            accessToken: token.accessToken
-                        )
-                        self.present(deleteAccountViewController, animated: true)
+                self.tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { apiTokenResult in
+                    switch apiTokenResult {
+                    case .success(let token):
+                        Task { @MainActor in
+                            let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(
+                                delegate: self,
+                                accessToken: token.accessToken
+                            )
+                            self.present(deleteAccountViewController, animated: true)
+                        }
+                    case .failure:
+                        break
                     }
                 }
             case .failure:
@@ -135,19 +140,21 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                                                   hideCreateAccountButton: true) { result in
             switch result {
             case .success(let success):
-                self.tokenService.getApiTokenUsing(code: success.code, codeVerifier: success.verifier) { token, error in
+                self.tokenService.getApiTokenUsing(code: success.code, codeVerifier: success.verifier) { apiTokenResult in
                     var title: String?
                     var description: String?
 
-                    if let token = token {
+                    switch apiTokenResult {
+                    case .success(let token):
                         title = "Login completed"
                         description =
                             "UserId: \(token.userId)\nToken: \(token.accessToken)\nExpires in: \(token.expiresIn ?? -1)"
                         self.testSwapRefreshToken(apiToken: token)
-                    } else if let error = error {
+                    case .failure(let error):
                         title = "Login error"
                         description = error.localizedDescription
                     }
+
                     print("refreshTokenConvert \(title ?? "")\n\(description ?? "")")
                 }
             case .failure(let failure):
@@ -177,13 +184,15 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
         @InjectService var loginService: InfomaniakLoginable
         @InjectService var tokenService: InfomaniakTokenable
 
-        tokenService.refreshToken(token: apiToken) { token, error in
+        tokenService.refreshToken(token: apiToken) { result in
             var title: String?
             var description: String?
-            if let token = token {
+
+            switch result {
+            case .success(let token):
                 title = "Login completed"
                 description = "UserId: \(token.userId)\nToken: \(token.accessToken)\nExpires in: \(token.expiresIn ?? -1)"
-            } else if let error = error {
+            case .failure(let error):
                 title = "Login error"
                 description = error.localizedDescription
             }

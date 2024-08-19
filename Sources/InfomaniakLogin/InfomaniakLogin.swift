@@ -84,13 +84,22 @@ public protocol InfomaniakLoginable {
 /// Something that can handle tokens
 public protocol InfomaniakTokenable {
     /// Get an api token async (callback on background thread)
-    func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (ApiToken?, Error?) -> Void)
+    func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void)
+
+    /// Get an api token
+    func apiTokenUsing(code: String, codeVerifier: String) async throws -> ApiToken
 
     /// Refresh api token async (callback on background thread)
-    func refreshToken(token: ApiToken, completion: @Sendable @escaping (ApiToken?, Error?) -> Void)
+    func refreshToken(token: ApiToken, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void)
+
+    /// Refresh api token
+    func refreshToken(token: ApiToken) async throws -> ApiToken
 
     /// Delete an api token async
-    func deleteApiToken(token: ApiToken, onError: @Sendable @escaping (Error) -> Void)
+    func deleteApiToken(token: ApiToken, completion: @Sendable @escaping (Result<Void, Error>) -> Void)
+
+    /// Delete an api token
+    func deleteApiToken(token: ApiToken) async throws
 }
 
 @MainActor
@@ -189,16 +198,44 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
 
     // MARK: - InfomaniakTokenable
 
-    public func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
+    public func getApiTokenUsing(
+        code: String,
+        codeVerifier: String,
+        completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void
+    ) {
         networkLogin.getApiTokenUsing(code: code, codeVerifier: codeVerifier, completion: completion)
     }
 
-    public func refreshToken(token: ApiToken, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
+    public func apiTokenUsing(code: String, codeVerifier: String) async throws -> ApiToken {
+        return try await withCheckedThrowingContinuation { continuation in
+            getApiTokenUsing(code: code, codeVerifier: codeVerifier) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func refreshToken(token: ApiToken, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void) {
         networkLogin.refreshToken(token: token, completion: completion)
     }
 
-    public func deleteApiToken(token: ApiToken, onError: @Sendable @escaping (Error) -> Void) {
-        networkLogin.deleteApiToken(token: token, onError: onError)
+    public func refreshToken(token: ApiToken) async throws -> ApiToken {
+        return try await withCheckedThrowingContinuation { continuation in
+            refreshToken(token: token) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func deleteApiToken(token: ApiToken, completion: @Sendable @escaping (Result<Void, Error>) -> Void) {
+        networkLogin.deleteApiToken(token: token, completion: completion)
+    }
+
+    public func deleteApiToken(token: ApiToken) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            deleteApiToken(token: token) { result in
+                continuation.resume(with: result)
+            }
+        }
     }
 
     // MARK: - Internal

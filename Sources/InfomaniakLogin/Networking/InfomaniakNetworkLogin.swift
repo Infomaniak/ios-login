@@ -19,13 +19,13 @@ import Foundation
 /// Something that can keep the network stack authenticated
 public protocol InfomaniakNetworkLoginable {
     /// Get an api token async (callback on background thread)
-    func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (ApiToken?, Error?) -> Void)
+    func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void)
 
     /// Refresh api token async (callback on background thread)
-    func refreshToken(token: ApiToken, completion: @Sendable @escaping (ApiToken?, Error?) -> Void)
+    func refreshToken(token: ApiToken, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void)
 
     /// Delete an api token async
-    func deleteApiToken(token: ApiToken, onError: @Sendable @escaping (Error) -> Void)
+    func deleteApiToken(token: ApiToken, completion: @Sendable @escaping (Result<Void, Error>) -> Void)
 }
 
 public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
@@ -39,7 +39,9 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
         tokenApiURL = config.loginURL.appendingPathComponent("token")
     }
 
-    public func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
+    public func getApiTokenUsing(code: String,
+                                 codeVerifier: String,
+                                 completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void) {
         var request = URLRequest(url: tokenApiURL)
 
         let parameterDictionary: [String: Any] = [
@@ -56,9 +58,9 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
         getApiToken(request: request, completion: completion)
     }
 
-    public func refreshToken(token: ApiToken, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
+    public func refreshToken(token: ApiToken, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void) {
         guard let refreshToken = token.refreshToken else {
-            completion(nil, InfomaniakLoginError.noRefreshToken)
+            completion(.failure(InfomaniakLoginError.noRefreshToken))
             return
         }
 
@@ -81,30 +83,30 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
         getApiToken(request: request, completion: completion)
     }
 
-    public func deleteApiToken(token: ApiToken, onError: @Sendable @escaping (Error) -> Void) {
+    public func deleteApiToken(token: ApiToken, completion: @Sendable @escaping (Result<Void, Error>) -> Void) {
         var request = URLRequest(url: tokenApiURL)
         request.addValue("Bearer \(token.accessToken)", forHTTPHeaderField: "Authorization")
         request.httpMethod = "DELETE"
 
         URLSession.shared.dataTask(with: request) { data, response, sessionError in
             guard let response = response as? HTTPURLResponse, let data else {
-                if let sessionError {
-                    onError(sessionError)
-                }
+                completion(.failure(sessionError ?? InfomaniakLoginError.unknownNetworkError))
                 return
             }
 
             do {
                 if !response.isSuccessful() {
                     let apiDeleteToken = try JSONDecoder().decode(ApiDeleteToken.self, from: data)
-                    onError(NSError(
+                    completion(.failure(NSError(
                         domain: apiDeleteToken.error!,
                         code: response.statusCode,
                         userInfo: ["Error": apiDeleteToken.error!]
-                    ))
+                    )))
+                } else {
+                    completion(.success(()))
                 }
             } catch {
-                onError(error)
+                completion(.failure(error))
             }
         }.resume()
     }
@@ -112,25 +114,29 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
     // MARK: Private
 
     /// Make the get token network call
-    private func getApiToken(request: URLRequest, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
+    private func getApiToken(request: URLRequest, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void) {
         let session = URLSession.shared
         session.dataTask(with: request) { data, response, sessionError in
             guard let response = response as? HTTPURLResponse,
                   let data = data, data.count > 0 else {
-                completion(nil, sessionError)
+                completion(.failure(sessionError ?? InfomaniakLoginError.unknownNetworkError))
                 return
             }
 
             do {
                 if response.isSuccessful() {
                     let apiToken = try JSONDecoder().decode(ApiToken.self, from: data)
-                    completion(apiToken, nil)
+                    completion(.success(apiToken))
                 } else {
                     let apiError = try JSONDecoder().decode(LoginApiError.self, from: data)
-                    completion(nil, NSError(domain: apiError.error, code: response.statusCode, userInfo: ["Error": apiError]))
+                    completion(.failure(NSError(
+                        domain: apiError.error,
+                        code: response.statusCode,
+                        userInfo: ["Error": apiError]
+                    )))
                 }
             } catch {
-                completion(nil, error)
+                completion(.failure(error))
             }
         }.resume()
     }

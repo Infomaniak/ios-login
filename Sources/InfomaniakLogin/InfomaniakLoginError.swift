@@ -26,6 +26,7 @@ public enum InfomaniakLoginError: LocalizedError {
     case invalidAccessToken(AccessToken?)
     case invalidUrl
     case noRefreshToken
+    case unknownNetworkError
 
     public var errorDescription: String? {
         switch self {
@@ -41,6 +42,8 @@ public enum InfomaniakLoginError: LocalizedError {
             return "Invalid url"
         case .noRefreshToken:
             return "No refresh token"
+        case .unknownNetworkError:
+            return "Unknown network error"
         }
     }
 }
