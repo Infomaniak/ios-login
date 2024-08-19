@@ -21,7 +21,7 @@ import UIKit
 
 class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDelegate {
     @LazyInjectService var loginService: InfomaniakLoginable
-    @LazyInjectService var tokenService: InfomaniakTokenable
+    @LazyInjectService var tokenService: InfomaniakNetworkLoginable
 
     func didCompleteDeleteAccount() {
         showAlert(title: "Account deleted", message: nil)
@@ -35,7 +35,7 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
         showAlert(title: "Login Failed", message: error.localizedDescription)
     }
 
-    func didCompleteLoginWith(code: String, verifier: String) {        
+    func didCompleteLoginWith(code: String, verifier: String) {
         tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { result in
             var title: String?
             var description: String?
@@ -121,22 +121,20 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
 
     @IBAction func refreshTokenConvert(_ sender: Any) {
         SimpleResolver.sharedResolver.removeAll()
+
+        let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+        let redirectUri = "com.infomaniak.drive://oauth2redirect"
+        let config = InfomaniakLogin.Config(clientId: clientId, redirectURI: redirectUri, accessType: .offline)
         // Init with non infinite refresh token
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
-            let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
-            let redirectUri = "com.infomaniak.drive://oauth2redirect"
-            let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri, accessType: .offline))
-            return login
+            return InfomaniakLogin(config: config)
         })
-        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
-            return try resolver.resolve(type: InfomaniakLoginable.self,
-                                        forCustomTypeIdentifier: nil,
-                                        factoryParameters: nil,
-                                        resolver: resolver)
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakNetworkLoginable.self) { _, resolver in
+            return InfomaniakNetworkLogin(config: config)
         })
 
         @InjectService var loginService: InfomaniakLoginable
-        @InjectService var tokenService: InfomaniakTokenable
+        @InjectService var tokenService: InfomaniakNetworkLoginable
 
         loginService.asWebAuthenticationLoginFrom(anchor: .init(),
                                                   useEphemeralSession: false,
@@ -170,22 +168,21 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
 
     nonisolated func testSwapRefreshToken(apiToken: ApiToken) {
         SimpleResolver.sharedResolver.removeAll()
+
+        let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+        let redirectUri = "com.infomaniak.drive://oauth2redirect"
+        let config = InfomaniakLogin.Config(clientId: clientId, redirectURI: redirectUri, accessType: .none)
+
         // Init with infinite refresh token
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
-            let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
-            let redirectUri = "com.infomaniak.drive://oauth2redirect"
-            let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri, accessType: .none))
-            return login
+            return InfomaniakLogin(config: config)
         })
-        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
-            return try resolver.resolve(type: InfomaniakLoginable.self,
-                                        forCustomTypeIdentifier: nil,
-                                        factoryParameters: nil,
-                                        resolver: resolver)
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakNetworkLoginable.self) { _, resolver in
+            return InfomaniakNetworkLogin(config: config)
         })
 
         @InjectService var loginService: InfomaniakLoginable
-        @InjectService var tokenService: InfomaniakTokenable
+        @InjectService var tokenService: InfomaniakNetworkLoginable
 
         tokenService.refreshToken(token: apiToken) { result in
             var title: String?

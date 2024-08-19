@@ -21,11 +21,20 @@ public protocol InfomaniakNetworkLoginable {
     /// Get an api token async (callback on background thread)
     func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void)
 
+    /// Get an api token
+    func apiTokenUsing(code: String, codeVerifier: String) async throws -> ApiToken
+
     /// Refresh api token async (callback on background thread)
     func refreshToken(token: ApiToken, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void)
 
+    /// Refresh api token
+    func refreshToken(token: ApiToken) async throws -> ApiToken
+
     /// Delete an api token async
     func deleteApiToken(token: ApiToken, completion: @Sendable @escaping (Result<Void, Error>) -> Void)
+
+    /// Delete an api token
+    func deleteApiToken(token: ApiToken) async throws
 }
 
 public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
@@ -37,6 +46,14 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
     public init(config: InfomaniakLogin.Config) {
         self.config = config
         tokenApiURL = config.loginURL.appendingPathComponent("token")
+    }
+
+    public func apiTokenUsing(code: String, codeVerifier: String) async throws -> ApiToken {
+        return try await withCheckedThrowingContinuation { continuation in
+            getApiTokenUsing(code: code, codeVerifier: codeVerifier) { result in
+                continuation.resume(with: result)
+            }
+        }
     }
 
     public func getApiTokenUsing(code: String,
@@ -56,6 +73,14 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
         request.httpBody = parameterDictionary.percentEncoded()
 
         getApiToken(request: request, completion: completion)
+    }
+
+    public func refreshToken(token: ApiToken) async throws -> ApiToken {
+        return try await withCheckedThrowingContinuation { continuation in
+            refreshToken(token: token) { result in
+                continuation.resume(with: result)
+            }
+        }
     }
 
     public func refreshToken(token: ApiToken, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void) {
@@ -81,6 +106,14 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
         request.httpBody = parameterDictionary.percentEncoded()
 
         getApiToken(request: request, completion: completion)
+    }
+
+    public func deleteApiToken(token: ApiToken) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            deleteApiToken(token: token) { result in
+                continuation.resume(with: result)
+            }
+        }
     }
 
     public func deleteApiToken(token: ApiToken, completion: @Sendable @escaping (Result<Void, Error>) -> Void) {
