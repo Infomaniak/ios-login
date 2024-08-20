@@ -81,18 +81,6 @@ public protocol InfomaniakLoginable {
     #endif
 }
 
-/// Something that can handle tokens
-public protocol InfomaniakTokenable {
-    /// Get an api token async (callback on background thread)
-    func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (ApiToken?, Error?) -> Void)
-
-    /// Refresh api token async (callback on background thread)
-    func refreshToken(token: ApiToken, completion: @Sendable @escaping (ApiToken?, Error?) -> Void)
-
-    /// Delete an api token async
-    func deleteApiToken(token: ApiToken, onError: @Sendable @escaping (Error) -> Void)
-}
-
 @MainActor
 class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProviding {
     private let anchor: ASPresentationAnchor
@@ -105,7 +93,7 @@ class PresentationContext: NSObject, ASWebAuthenticationPresentationContextProvi
     }
 }
 
-public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
+public class InfomaniakLogin: InfomaniakLoginable {
     let networkLogin: InfomaniakNetworkLoginable
 
     public let config: Config
@@ -185,20 +173,6 @@ public class InfomaniakLogin: InfomaniakLoginable, InfomaniakTokenable {
                 delegate?.didFailLoginWith(error: error)
             }
         }
-    }
-
-    // MARK: - InfomaniakTokenable
-
-    public func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
-        networkLogin.getApiTokenUsing(code: code, codeVerifier: codeVerifier, completion: completion)
-    }
-
-    public func refreshToken(token: ApiToken, completion: @Sendable @escaping (ApiToken?, Error?) -> Void) {
-        networkLogin.refreshToken(token: token, completion: completion)
-    }
-
-    public func deleteApiToken(token: ApiToken, onError: @Sendable @escaping (Error) -> Void) {
-        networkLogin.deleteApiToken(token: token, onError: onError)
     }
 
     // MARK: - Internal

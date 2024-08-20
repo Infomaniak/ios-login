@@ -21,7 +21,7 @@ import UIKit
 
 class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDelegate {
     @LazyInjectService var loginService: InfomaniakLoginable
-    @LazyInjectService var tokenService: InfomaniakTokenable
+    @LazyInjectService var tokenService: InfomaniakNetworkLoginable
 
     func didCompleteDeleteAccount() {
         showAlert(title: "Account deleted", message: nil)
@@ -36,14 +36,15 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
     }
 
     func didCompleteLoginWith(code: String, verifier: String) {
-        tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, error in
+        tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { result in
             var title: String?
             var description: String?
 
-            if let token = token {
+            switch result {
+            case .success(let token):
                 title = "Login completed"
                 description = "UserId: \(token.userId)\nToken: \(token.accessToken)"
-            } else if let error = error {
+            case .failure(let error):
                 title = "Login error"
                 description = error.localizedDescription
             }
@@ -62,14 +63,18 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
                                                   hideCreateAccountButton: true) { result in
             switch result {
             case .success((let code, let verifier)):
-                self.tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { token, _ in
-                    guard let token else { return }
-                    Task { @MainActor in
-                        let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(
-                            delegate: self,
-                            accessToken: token.accessToken
-                        )
-                        self.present(deleteAccountViewController, animated: true)
+                self.tokenService.getApiTokenUsing(code: code, codeVerifier: verifier) { apiTokenResult in
+                    switch apiTokenResult {
+                    case .success(let token):
+                        Task { @MainActor in
+                            let deleteAccountViewController = DeleteAccountViewController.instantiateInViewController(
+                                delegate: self,
+                                accessToken: token.accessToken
+                            )
+                            self.present(deleteAccountViewController, animated: true)
+                        }
+                    case .failure:
+                        break
                     }
                 }
             case .failure:
@@ -108,46 +113,49 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
         alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
             self.dismiss(animated: true, completion: nil)
         })
-        present(alertController, animated: true, completion: nil)
+        Task {
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            self.present(alertController, animated: true, completion: nil)
+        }
     }
 
     @IBAction func refreshTokenConvert(_ sender: Any) {
         SimpleResolver.sharedResolver.removeAll()
+
+        let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+        let redirectUri = "com.infomaniak.drive://oauth2redirect"
+        let config = InfomaniakLogin.Config(clientId: clientId, redirectURI: redirectUri, accessType: .offline)
         // Init with non infinite refresh token
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
-            let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
-            let redirectUri = "com.infomaniak.drive://oauth2redirect"
-            let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri, accessType: .offline))
-            return login
+            return InfomaniakLogin(config: config)
         })
-        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
-            return try resolver.resolve(type: InfomaniakLoginable.self,
-                                        forCustomTypeIdentifier: nil,
-                                        factoryParameters: nil,
-                                        resolver: resolver)
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakNetworkLoginable.self) { _, resolver in
+            return InfomaniakNetworkLogin(config: config)
         })
 
         @InjectService var loginService: InfomaniakLoginable
-        @InjectService var tokenService: InfomaniakTokenable
+        @InjectService var tokenService: InfomaniakNetworkLoginable
 
         loginService.asWebAuthenticationLoginFrom(anchor: .init(),
                                                   useEphemeralSession: false,
                                                   hideCreateAccountButton: true) { result in
             switch result {
             case .success(let success):
-                self.tokenService.getApiTokenUsing(code: success.code, codeVerifier: success.verifier) { token, error in
+                self.tokenService.getApiTokenUsing(code: success.code, codeVerifier: success.verifier) { apiTokenResult in
                     var title: String?
                     var description: String?
 
-                    if let token = token {
+                    switch apiTokenResult {
+                    case .success(let token):
                         title = "Login completed"
                         description =
                             "UserId: \(token.userId)\nToken: \(token.accessToken)\nExpires in: \(token.expiresIn ?? -1)"
                         self.testSwapRefreshToken(apiToken: token)
-                    } else if let error = error {
+                    case .failure(let error):
                         title = "Login error"
                         description = error.localizedDescription
                     }
+
                     print("refreshTokenConvert \(title ?? "")\n\(description ?? "")")
                 }
             case .failure(let failure):
@@ -160,30 +168,31 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
 
     nonisolated func testSwapRefreshToken(apiToken: ApiToken) {
         SimpleResolver.sharedResolver.removeAll()
+
+        let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+        let redirectUri = "com.infomaniak.drive://oauth2redirect"
+        let config = InfomaniakLogin.Config(clientId: clientId, redirectURI: redirectUri, accessType: .none)
+
         // Init with infinite refresh token
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
-            let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
-            let redirectUri = "com.infomaniak.drive://oauth2redirect"
-            let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri, accessType: .none))
-            return login
+            return InfomaniakLogin(config: config)
         })
-        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
-            return try resolver.resolve(type: InfomaniakLoginable.self,
-                                        forCustomTypeIdentifier: nil,
-                                        factoryParameters: nil,
-                                        resolver: resolver)
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakNetworkLoginable.self) { _, resolver in
+            return InfomaniakNetworkLogin(config: config)
         })
 
         @InjectService var loginService: InfomaniakLoginable
-        @InjectService var tokenService: InfomaniakTokenable
+        @InjectService var tokenService: InfomaniakNetworkLoginable
 
-        tokenService.refreshToken(token: apiToken) { token, error in
+        tokenService.refreshToken(token: apiToken) { result in
             var title: String?
             var description: String?
-            if let token = token {
+
+            switch result {
+            case .success(let token):
                 title = "Login completed"
                 description = "UserId: \(token.userId)\nToken: \(token.accessToken)\nExpires in: \(token.expiresIn ?? -1)"
-            } else if let error = error {
+            case .failure(let error):
                 title = "Login error"
                 description = error.localizedDescription
             }

@@ -38,20 +38,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func setupDI() {
+        let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
+        let redirectUri = "com.infomaniak.drive://oauth2redirect"
+        let config = InfomaniakLogin.Config(clientId: clientId, redirectURI: redirectUri, accessType: .none)
         /// The `InfomaniakLoginable` interface hides the concrete type `InfomaniakLogin`
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
-            let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
-            let redirectUri = "com.infomaniak.drive://oauth2redirect"
-            let login = InfomaniakLogin(config: .init(clientId: clientId, redirectURI: redirectUri, accessType: .none))
-            return login
+            return InfomaniakLogin(config: config)
         })
 
-        /// Chained resolution, the `InfomaniakTokenable` interface uses the `InfomaniakLogin` object as well
-        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakTokenable.self) { _, resolver in
-            return try resolver.resolve(type: InfomaniakLoginable.self,
-                                        forCustomTypeIdentifier: nil,
-                                        factoryParameters: nil,
-                                        resolver: resolver)
+        /// The `InfomaniakNetworkLoginable` interface hides the concrete type `InfomaniakNetworkLogin`
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakNetworkLoginable.self) { _, resolver in
+            return InfomaniakNetworkLogin(config: config)
         })
     }
 }
