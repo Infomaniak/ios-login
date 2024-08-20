@@ -1,16 +1,14 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "InfomaniakDI",
-        "repositoryURL": "https://github.com/Infomaniak/ios-dependency-injection",
-        "state": {
-          "branch": null,
-          "revision": "8dc9e67e6d3d9f4f5bd02d693a7ce1f93b125bcd",
-          "version": "2.0.1"
-        }
+  "pins" : [
+    {
+      "identity" : "ios-dependency-injection",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Infomaniak/ios-dependency-injection",
+      "state" : {
+        "revision" : "8dc9e67e6d3d9f4f5bd02d693a7ce1f93b125bcd",
+        "version" : "2.0.1"
       }
-    ]
-  },
-  "version": 1
+    }
+  ],
+  "version" : 2
 }

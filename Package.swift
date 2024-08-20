@@ -7,7 +7,7 @@ let package = Package(
     name: "InfomaniakLogin",
     platforms: [
         .iOS(.v13),
-        .macOS(.v12)
+        .macOS(.v10_15)
     ],
     products: [
         .library(
