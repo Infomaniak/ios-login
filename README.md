@@ -116,7 +116,7 @@ func didFailLoginWith(error: Error) {
 }
 ````
 
-And you can finally use the login fonction, for example with a button, by writing:
+And you can finally use the login function, for example with a button, by writing:
 
 ````swift
 @IBAction func login(_ sender: UIButton) {
