@@ -167,6 +167,12 @@ extension WebViewController: WKNavigationDelegate {
             return
         }
 
+        if url.absoluteString.starts(with: redirectUri) {
+            _ = infomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
+            decisionHandler(.cancel)
+            return
+        }
+
         if url.absoluteString.contains("www.google.com/recaptcha") {
             decisionHandler(.allow)
             return
