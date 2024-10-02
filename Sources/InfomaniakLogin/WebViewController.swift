@@ -156,18 +156,28 @@ extension WebViewController: WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @MainActor (WKNavigationActionPolicy) -> Swift.Void
     ) {
-        if let host = navigationAction.request.url?.host {
-            if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {
-                decisionHandler(.allow)
-                return
-            }
+        guard let url = navigationAction.request.url,
+              let host = url.host else {
+            decisionHandler(.cancel)
+            return
         }
-        if let url = navigationAction.request.url?.absoluteString {
-            if url.contains("www.google.com/recaptcha") {
-                decisionHandler(.allow)
-                return
-            }
+
+        if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {
+            decisionHandler(.allow)
+            return
         }
+
+        if url.absoluteString.starts(with: redirectUri) {
+            _ = infomaniakLogin.webviewHandleRedirectUri(url: webView.url!)
+            decisionHandler(.cancel)
+            return
+        }
+
+        if url.absoluteString.contains("www.google.com/recaptcha") {
+            decisionHandler(.allow)
+            return
+        }
+        
         decisionHandler(.cancel)
     }
 
