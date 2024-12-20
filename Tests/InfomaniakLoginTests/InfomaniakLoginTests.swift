@@ -21,12 +21,8 @@ final class InfomaniakLoginTests: XCTestCase {
     func testExample() {
         // GIVEN
         let error = InfomaniakLoginError.accessDenied
-        
+
         // THEN
         XCTAssertNotNil(error)
     }
-
-    static var allTests = [
-        ("testExample", testExample),
-    ]
 }
