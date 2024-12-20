@@ -16,7 +16,7 @@
 
 import Foundation
 
-public class ApiDeleteToken: Codable {
+public final class ApiDeleteToken: Codable, Sendable {
     let result: String
     let error: String?
     let data: Bool?
