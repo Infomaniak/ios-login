@@ -174,19 +174,21 @@ extension WebViewController: WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @MainActor (WKNavigationActionPolicy) -> Swift.Void
     ) {
-        if let host = navigationAction.request.url?.host {
-            if host.contains("login.infomaniak.com") || host.contains("oauth2redirect") {
+        if let host = navigationAction.request.url?.host,
+           let configHost = urlRequest.url?.host {
+            if host.contains(configHost) || host.contains("oauth2redirect") {
                 decisionHandler(.allow)
                 return
             }
-        }
-        if let url = navigationAction.request.url?.absoluteString {
-            if url.contains("www.google.com/recaptcha") {
-                decisionHandler(.allow)
+
+            // We are trying to navigate to somewhere else than login but still on the infomaniak host. (eg. manager)
+            if host.hasSuffix("infomaniak.com") {
+                decisionHandler(.cancel)
                 return
             }
         }
-        decisionHandler(.cancel)
+
+        decisionHandler(.allow)
     }
 
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
