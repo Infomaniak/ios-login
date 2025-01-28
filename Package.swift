@@ -23,9 +23,6 @@ let package = Package(
             name: "InfomaniakLogin",
             dependencies: [
                 .product(name: "InfomaniakDI", package: "ios-dependency-injection"),
-            ],
-            swiftSettings: [
-                .enableExperimentalFeature("StrictConcurrency")
             ]
         ),
         .testTarget(

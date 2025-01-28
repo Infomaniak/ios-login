@@ -312,23 +312,25 @@ public extension InfomaniakLogin {
         }
 
         let urlRequest = URLRequest(url: loginUrl)
-        webViewController = WebViewController()
+        let webViewController = WebViewController(
+            clearCookie: clearCookie,
+            redirectUri: config.redirectURI,
+            urlRequest: urlRequest
+        )
+        self.webViewController = webViewController
 
         if let navigationController = viewController as? UINavigationController {
-            navigationController.pushViewController(webViewController!, animated: true)
+            navigationController.pushViewController(webViewController, animated: true)
         } else {
-            let navigationController = UINavigationController(rootViewController: webViewController!)
+            let navigationController = UINavigationController(rootViewController: webViewController)
             viewController.present(navigationController, animated: true)
         }
 
-        webViewController?.urlRequest = urlRequest
-        webViewController?.redirectUri = config.redirectURI
-        webViewController?.clearCookie = clearCookie
-        webViewController?.navBarTitle = webviewNavbarTitle
-        webViewController?.navBarTitleColor = webviewNavbarTitleColor
-        webViewController?.navBarColor = webviewNavbarColor
-        webViewController?.navBarButtonColor = webviewNavbarButtonColor
-        webViewController?.timeOutMessage = webviewTimeOutMessage
+        webViewController.navBarTitle = webviewNavbarTitle
+        webViewController.navBarTitleColor = webviewNavbarTitleColor
+        webViewController.navBarColor = webviewNavbarColor
+        webViewController.navBarButtonColor = webviewNavbarButtonColor
+        webViewController.timeOutMessage = webviewTimeOutMessage
     }
 
     @MainActor

@@ -20,30 +20,48 @@ import UIKit
 import WebKit
 
 class WebViewController: UIViewController, WKUIDelegate {
-    @LazyInjectService var infomaniakLogin: InfomaniakLoginable
+    @LazyInjectService private var infomaniakLogin: InfomaniakLoginable
 
-    var clearCookie: Bool!
+    private let clearCookie: Bool
+    private let redirectUri: String
+    private let urlRequest: URLRequest
+
     var navBarButtonColor: UIColor?
     var navBarColor: UIColor?
     var navBarTitle: String?
     var navBarTitleColor: UIColor?
-    var redirectUri: String!
-    var urlRequest: URLRequest!
-    var webView: WKWebView!
 
-    let progressView = UIProgressView(progressViewStyle: .default)
-    private var estimatedProgressObserver: NSKeyValueObservation?
-
-    let maxLoadingTime = 20.0
     var timeOutMessage: String?
     var timer: Timer?
 
-    override func loadView() {
-        super.loadView()
+    private lazy var webView: WKWebView = {
         let webConfiguration = WKWebViewConfiguration()
-        webView = WKWebView(frame: .zero, configuration: webConfiguration)
+        let webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.navigationDelegate = self
         webView.uiDelegate = self
+
+        return webView
+    }()
+
+    private let progressView = UIProgressView(progressViewStyle: .default)
+    private var estimatedProgressObserver: NSKeyValueObservation?
+
+    private let maxLoadingTime = 20.0
+
+    init(clearCookie: Bool, redirectUri: String, urlRequest: URLRequest) {
+        self.clearCookie = clearCookie
+        self.redirectUri = redirectUri
+        self.urlRequest = urlRequest
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func loadView() {
+        super.loadView()
         view = webView
     }
 
