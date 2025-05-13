@@ -35,6 +35,14 @@ public protocol InfomaniakNetworkLoginable {
 
     /// Delete an api token
     func deleteApiToken(token: ApiToken) async throws
+
+    func derivateApiToken(
+        using token: ApiToken,
+        attestationToken: String,
+        completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void
+    )
+
+    func derivateApiToken(using token: ApiToken, attestationToken: String,) async throws -> ApiToken
 }
 
 public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
@@ -97,6 +105,38 @@ public class InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
             "refresh_token": refreshToken
         ]
 
+        if config.accessType == .none {
+            parameterDictionary["duration"] = "infinite"
+        }
+
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.httpBody = parameterDictionary.percentEncoded()
+
+        getApiToken(request: request, completion: completion)
+    }
+
+    public func derivateApiToken(using token: ApiToken, attestationToken: String) async throws -> ApiToken {
+        return try await withCheckedThrowingContinuation { continuation in
+            derivateApiToken(using: token, attestationToken: attestationToken) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func derivateApiToken(using apiToken: ApiToken,
+                                 attestationToken: String,
+                                 completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void) {
+        var request = URLRequest(url: tokenApiURL)
+
+        var parameterDictionary: [String: Any] = [
+            "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+            "subject_token": apiToken.accessToken,
+            "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+            "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+            "client_assertion": attestationToken,
+            "client_id": config.clientId,
+        ]
         if config.accessType == .none {
             parameterDictionary["duration"] = "infinite"
         }
