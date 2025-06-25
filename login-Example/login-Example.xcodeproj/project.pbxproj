@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		379A706E2DDCAAC800F276E4 /* InfomaniakDeviceCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 379A706D2DDCAAC800F276E4 /* InfomaniakDeviceCheck */; };
 		C711BF41247E914E0018D5BF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C711BF40247E914E0018D5BF /* AppDelegate.swift */; };
 		C711BF43247E914E0018D5BF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C711BF42247E914E0018D5BF /* SceneDelegate.swift */; };
 		C711BF45247E914E0018D5BF /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C711BF44247E914E0018D5BF /* ViewController.swift */; };
@@ -33,6 +34,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				379A706E2DDCAAC800F276E4 /* InfomaniakDeviceCheck in Frameworks */,
 				C72EF9B7247FB50100F53C68 /* InfomaniakLogin in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -97,6 +99,7 @@
 			name = "login-Example";
 			packageProductDependencies = (
 				C72EF9B6247FB50100F53C68 /* InfomaniakLogin */,
+				379A706D2DDCAAC800F276E4 /* InfomaniakDeviceCheck */,
 			);
 			productName = "login-Example";
 			productReference = C711BF3D247E914E0018D5BF /* login-Example.app */;
@@ -127,6 +130,7 @@
 			);
 			mainGroup = C711BF34247E914E0018D5BF;
 			packageReferences = (
+				379A706C2DDCAAC800F276E4 /* XCRemoteSwiftPackageReference "ios-device-check" */,
 			);
 			productRefGroup = C711BF3E247E914E0018D5BF /* Products */;
 			projectDirPath = "";
@@ -306,7 +310,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				INFOPLIST_FILE = "login-Example/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -325,7 +329,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				INFOPLIST_FILE = "login-Example/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -360,7 +364,23 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		379A706C2DDCAAC800F276E4 /* XCRemoteSwiftPackageReference "ios-device-check" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Infomaniak/ios-device-check";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		379A706D2DDCAAC800F276E4 /* InfomaniakDeviceCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 379A706C2DDCAAC800F276E4 /* XCRemoteSwiftPackageReference "ios-device-check" */;
+			productName = InfomaniakDeviceCheck;
+		};
 		C72EF9B6247FB50100F53C68 /* InfomaniakLogin */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = InfomaniakLogin;
