@@ -15,6 +15,7 @@
  */
 
 import AuthenticationServices
+import InfomaniakDeviceCheck
 @testable import InfomaniakDI
 import InfomaniakLogin
 import UIKit
@@ -124,7 +125,12 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
 
         let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
         let redirectUri = "com.infomaniak.drive://oauth2redirect"
-        let config = InfomaniakLogin.Config(clientId: clientId, redirectURI: redirectUri, accessType: .offline)
+        let config = InfomaniakLogin.Config(
+            clientId: clientId,
+            loginURL: AppDelegate.loginBaseURL,
+            redirectURI: redirectUri,
+            accessType: .offline
+        )
         // Init with non infinite refresh token
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
             return InfomaniakLogin(config: config)
@@ -171,7 +177,10 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
 
         let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
         let redirectUri = "com.infomaniak.drive://oauth2redirect"
-        let config = InfomaniakLogin.Config(clientId: clientId, redirectURI: redirectUri, accessType: .none)
+        let config = InfomaniakLogin.Config(clientId: clientId,
+                                            loginURL: AppDelegate.loginBaseURL,
+                                            redirectURI: redirectUri,
+                                            accessType: .none)
 
         // Init with infinite refresh token
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
@@ -181,7 +190,6 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
             return InfomaniakNetworkLogin(config: config)
         })
 
-        @InjectService var loginService: InfomaniakLoginable
         @InjectService var tokenService: InfomaniakNetworkLoginable
 
         tokenService.refreshToken(token: apiToken) { result in
@@ -201,6 +209,70 @@ class ViewController: UIViewController, InfomaniakLoginDelegate, DeleteAccountDe
 
             Task { @MainActor in
                 self.showAlert(title: title, message: description)
+            }
+        }
+    }
+
+    @IBAction func deriveToken(_ sender: Any) {
+        Task {
+            do {
+                let (code, verifier) = try await asWebAuthenticationLogin()
+                let driveApiToken = try await tokenService.apiTokenUsing(code: code, codeVerifier: verifier)
+
+                let mailApiToken = try await derivateTokenAsMailClient(apiToken: driveApiToken)
+
+                showAlert(
+                    title: "Derived token from kDrive to Mail",
+                    message: "Drive: \(driveApiToken.accessToken)\nMail: \(mailApiToken.accessToken)"
+                )
+            } catch {
+                showAlert(title: "Derivation Error", message: error.localizedDescription)
+            }
+        }
+    }
+
+    func derivateTokenAsMailClient(apiToken: ApiToken) async throws -> ApiToken {
+        // reconfigure DI as if we were Mail instead of kDrive
+        SimpleResolver.sharedResolver.removeAll()
+
+        let clientId = "E90BC22D-67A8-452C-BE93-28DA33588CA4"
+        let redirectUri = "com.infomaniak.mail://oauth2redirect"
+        let config = InfomaniakLogin.Config(
+            clientId: clientId,
+            loginURL: AppDelegate.loginBaseURL,
+            redirectURI: redirectUri,
+            accessType: .none
+        )
+
+        let protectedLoginURL = config.loginURL.appendingPathComponent("token")
+        let attestationToken = try await InfomaniakDeviceCheck(environment: .preprod)
+            .generateAttestationFor(
+                targetUrl: protectedLoginURL,
+                bundleId: "com.infomaniak.mail",
+                bypassValidation: true
+            )
+
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
+            return InfomaniakLogin(config: config)
+        })
+        SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakNetworkLoginable.self) { _, resolver in
+            return InfomaniakNetworkLogin(config: config)
+        })
+
+        @InjectService var tokenService: InfomaniakNetworkLoginable
+
+        let derivatedToken = try await tokenService.derivateApiToken(using: apiToken, attestationToken: attestationToken)
+        return derivatedToken
+    }
+
+    func asWebAuthenticationLogin() async throws -> (code: String, verifier: String) {
+        return try await withCheckedThrowingContinuation { continuation in
+            loginService.asWebAuthenticationLoginFrom(
+                anchor: .init(),
+                useEphemeralSession: true,
+                hideCreateAccountButton: true
+            ) {
+                continuation.resume(with: $0)
             }
         }
     }

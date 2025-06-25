@@ -20,6 +20,8 @@ import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    static let loginBaseURL = URL(string: "https://login.infomaniak.com/")! // Preprod is https://login.preprod.dev.infomaniak.ch/
+
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         setupDI()
@@ -40,7 +42,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func setupDI() {
         let clientId = "9473D73C-C20F-4971-9E10-D957C563FA68"
         let redirectUri = "com.infomaniak.drive://oauth2redirect"
-        let config = InfomaniakLogin.Config(clientId: clientId, redirectURI: redirectUri, accessType: .none)
+        let config = InfomaniakLogin.Config(
+            clientId: clientId,
+            loginURL: AppDelegate.loginBaseURL,
+            redirectURI: redirectUri,
+            accessType: .none
+        )
         /// The `InfomaniakLoginable` interface hides the concrete type `InfomaniakLogin`
         SimpleResolver.sharedResolver.store(factory: Factory(type: InfomaniakLoginable.self) { _, _ in
             return InfomaniakLogin(config: config)
