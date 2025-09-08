@@ -43,7 +43,18 @@ import Foundation
         refreshToken = try values.decodeIfPresent(String.self, forKey: .refreshToken)
         scope = try values.decode(String.self, forKey: .scope)
         tokenType = try values.decode(String.self, forKey: .tokenType)
-        userId = try values.decode(Int.self, forKey: .userId)
+        if let userId = try? values.decode(Int.self, forKey: .userId) {
+            self.userId = userId
+        } else if let rawUserId = try? values.decode(String.self, forKey: .userId),
+                  let userId = Int(rawUserId) {
+            self.userId = userId
+        } else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .userId,
+                in: values,
+                debugDescription: "user_id is not an Int or String convertible to Int"
+            )
+        }
 
         if let maybeExpiresIn {
             let newExpirationDate = Date().addingTimeInterval(TimeInterval(Double(maybeExpiresIn)))
