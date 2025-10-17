@@ -43,6 +43,14 @@ public protocol InfomaniakLoginable {
 
     @available(iOS 13.0, *)
     @MainActor
+    func asWebAuthenticationLoginFrom(
+        anchor: ASPresentationAnchor,
+        useEphemeralSession: Bool,
+        hideCreateAccountButton: Bool
+    ) async throws -> (code: String, verifier: String)
+
+    @available(iOS 13.0, *)
+    @MainActor
     func asWebAuthenticationLoginFrom(anchor: ASPresentationAnchor,
                                       useEphemeralSession: Bool,
                                       hideCreateAccountButton: Bool,
@@ -122,6 +130,24 @@ public class InfomaniakLogin: InfomaniakLoginable {
     public init(config: Config) {
         self.config = config
         networkLogin = InfomaniakNetworkLogin(config: config)
+    }
+
+    @available(iOS 13.0, *)
+    @MainActor
+    public func asWebAuthenticationLoginFrom(
+        anchor: ASPresentationAnchor,
+        useEphemeralSession: Bool,
+        hideCreateAccountButton: Bool
+    ) async throws -> (code: String, verifier: String) {
+        try await withCheckedThrowingContinuation { continuation in
+            asWebAuthenticationLoginFrom(
+                anchor: anchor,
+                useEphemeralSession: useEphemeralSession,
+                hideCreateAccountButton: hideCreateAccountButton
+            ) { result in
+                continuation.resume(with: result)
+            }
+        }
     }
 
     @available(iOS 13.0, *)
