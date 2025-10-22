@@ -16,7 +16,7 @@
 
 import Foundation
 
-@frozen public struct ApiToken: Codable {
+@frozen public struct ApiToken: Codable, Sendable {
     public let accessToken: String
     public let refreshToken: String?
     public let scope: String
