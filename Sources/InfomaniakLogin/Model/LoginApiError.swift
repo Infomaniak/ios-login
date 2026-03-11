@@ -17,9 +17,9 @@
 import Foundation
 
 /// An  api error for `InfomaniakLogin` form
-@objc public class LoginApiError: NSObject, Codable {
-    @objc public let error: String
-    @objc public let errorDescription: String?
+public struct LoginApiError: Codable, Equatable, Hashable, Sendable {
+    public let error: String
+    public let errorDescription: String?
 
     enum CodingKeys: String, CodingKey {
         case error
