@@ -67,11 +67,11 @@ import Foundation
     public init(
         accessToken: String,
         expiresIn: Int,
-        refreshToken: String,
+        refreshToken: String?,
         scope: String,
         tokenType: String,
         userId: Int,
-        expirationDate: Date
+        expirationDate: Date?
     ) {
         self.accessToken = accessToken
         self.expiresIn = expiresIn
