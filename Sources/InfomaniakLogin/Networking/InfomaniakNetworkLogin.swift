@@ -18,6 +18,9 @@ import Foundation
 
 /// Something that can keep the network stack authenticated
 public protocol InfomaniakNetworkLoginable: Sendable {
+    /// Current config used by InfomaniakLogin
+    var config: InfomaniakLogin.Config { get }
+
     /// Get an api token async (callback on background thread)
     func getApiTokenUsing(code: String, codeVerifier: String, completion: @Sendable @escaping (Result<ApiToken, Error>) -> Void)
 
@@ -46,7 +49,7 @@ public protocol InfomaniakNetworkLoginable: Sendable {
 }
 
 public struct InfomaniakNetworkLogin: InfomaniakNetworkLoginable {
-    private let config: InfomaniakLogin.Config
+    public let config: InfomaniakLogin.Config
     private let tokenApiURL: URL
 
     // MARK: Public
