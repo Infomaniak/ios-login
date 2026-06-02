@@ -165,8 +165,28 @@ public class InfomaniakLogin: InfomaniakLoginable {
             return
         }
 
-        let session = ASWebAuthenticationSession(url: loginUrl, callbackURLScheme: callbackUrlScheme) { callbackURL, error in
-            if let callbackURL = callbackURL {
+        let context = PresentationContext(anchor: anchor)
+        asPresentationContext = context
+        asWebAuthenticationLoginFrom(
+            loginURL: loginUrl,
+            callbackURLScheme: callbackUrlScheme,
+            useEphemeralSession: useEphemeralSession,
+            context: context,
+            completion: completion
+        )
+    }
+
+    // Because of a crash related to a bug in Swift Concurrency we need to call ASWebAuthenticationSession from nonisolated
+    private nonisolated func asWebAuthenticationLoginFrom(
+        loginURL: URL,
+        callbackURLScheme: String,
+        useEphemeralSession: Bool,
+        context: PresentationContext,
+        completion: @escaping (Result<(code: String, verifier: String), Error>) -> Void
+    ) {
+        let session = ASWebAuthenticationSession(url: loginURL,
+                                                 callbackURLScheme: callbackURLScheme) { callbackURL, error in
+            if let callbackURL {
                 _ = InfomaniakLogin.checkResponse(url: callbackURL,
                                                   onSuccess: { code in
                                                       completion(.success((code: code, verifier: self.codeVerifier)))
@@ -174,12 +194,12 @@ public class InfomaniakLogin: InfomaniakLoginable {
                                                   onFailure: { error in
                                                       completion(.failure(error))
                                                   })
-            } else if let error = error {
+            } else if let error {
                 completion(.failure(error))
             }
         }
-        asPresentationContext = PresentationContext(anchor: anchor)
-        session.presentationContextProvider = asPresentationContext
+
+        session.presentationContextProvider = context
         session.prefersEphemeralWebBrowserSession = useEphemeralSession
         session.start()
     }
