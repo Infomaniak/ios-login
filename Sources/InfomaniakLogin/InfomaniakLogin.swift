@@ -111,6 +111,7 @@ public class InfomaniakLogin: InfomaniakLoginable {
     private var codeChallenge: String!
     private var codeChallengeMethod: String!
     private var codeVerifier: String!
+    public var skipAutoRedirect = false
 
     private var asPresentationContext: PresentationContext?
     private var hideCreateAccountButton = true
@@ -259,6 +260,9 @@ public class InfomaniakLogin: InfomaniakLoginable {
 
         if hideCreateAccountButton {
             urlComponents?.queryItems?.append(URLQueryItem(name: "hide_create_account", value: ""))
+        }
+        if skipAutoRedirect {
+            urlComponents?.queryItems?.append(URLQueryItem(name: "skipAutoRedirect", value: "true"))
         }
         return urlComponents?.url
     }
