@@ -38,7 +38,7 @@ public protocol InfomaniakLoginDelegate: AnyObject {
 }
 
 /// Something that can authentify with Infomaniak
-public protocol InfomaniakLoginable {
+public protocol InfomaniakLoginable: AnyObject {
     var config: InfomaniakLogin.Config { get }
 
     /// When `true`, the login web flow will not automatically redirect the user after a successful authentication.
