@@ -26,6 +26,18 @@ import Foundation
 }
 
 public extension InfomaniakLogin {
+    @frozen struct LoginFormConfig {
+        public let skipAutoRedirect: Bool
+        
+        public init(skipAutoRedirect: Bool = false) {
+            self.skipAutoRedirect = skipAutoRedirect
+        }
+            
+        public init() {
+            self.skipAutoRedirect = false
+        }
+    }
+        
     @frozen struct Config {
         public let clientId: String
         public let loginURL: URL

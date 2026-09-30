@@ -41,9 +41,6 @@ public protocol InfomaniakLoginDelegate: AnyObject {
 public protocol InfomaniakLoginable: AnyObject {
     var config: InfomaniakLogin.Config { get }
 
-    /// When `true`, the login web flow will not automatically redirect the user after a successful authentication.
-    var skipAutoRedirect: Bool { get set }
-
     @available(iOS 13.0, *)
     @MainActor
     func asWebAuthenticationLoginFrom(
@@ -108,13 +105,13 @@ public class InfomaniakLogin: InfomaniakLoginable {
     let networkLogin: InfomaniakNetworkLoginable
 
     public let config: Config
+    public let loginFormConfig: LoginFormConfig
 
     private var delegate: InfomaniakLoginDelegate?
 
     private var codeChallenge: String!
     private var codeChallengeMethod: String!
     private var codeVerifier: String!
-    public var skipAutoRedirect = false
 
     private var asPresentationContext: PresentationContext?
     private var hideCreateAccountButton = true
@@ -131,9 +128,14 @@ public class InfomaniakLogin: InfomaniakLoginable {
     private var webviewTimeOutMessage: String?
     #endif
 
-    public init(config: Config) {
+    public init(config: Config, loginFormConfig: LoginFormConfig) {
         self.config = config
         networkLogin = InfomaniakNetworkLogin(config: config)
+        self.loginFormConfig = loginFormConfig
+    }
+    
+    public convenience init(config: Config) {
+        self.init(config: config, loginFormConfig: LoginFormConfig())
     }
 
     @available(iOS 13.0, *)
@@ -264,7 +266,7 @@ public class InfomaniakLogin: InfomaniakLoginable {
         if hideCreateAccountButton {
             urlComponents?.queryItems?.append(URLQueryItem(name: "hide_create_account", value: ""))
         }
-        if skipAutoRedirect {
+        if loginFormConfig.skipAutoRedirect {
             urlComponents?.queryItems?.append(URLQueryItem(name: "skipAutoRedirect", value: "true"))
         }
         return urlComponents?.url
