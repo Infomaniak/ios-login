@@ -41,6 +41,9 @@ public protocol InfomaniakLoginDelegate: AnyObject {
 public protocol InfomaniakLoginable {
     var config: InfomaniakLogin.Config { get }
 
+    /// When `true`, the login web flow will not automatically redirect the user after a successful authentication.
+    var skipAutoRedirect: Bool { get set }
+
     @available(iOS 13.0, *)
     @MainActor
     func asWebAuthenticationLoginFrom(
