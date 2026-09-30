@@ -34,7 +34,7 @@ public extension InfomaniakLogin {
         }
             
         public init() {
-            self.skipAutoRedirect = false
+            skipAutoRedirect = false
         }
     }
         
