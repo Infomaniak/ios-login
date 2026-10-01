@@ -105,6 +105,7 @@ public class InfomaniakLogin: InfomaniakLoginable {
     let networkLogin: InfomaniakNetworkLoginable
 
     public let config: Config
+    public let loginFormConfig: LoginFormConfig
 
     private var delegate: InfomaniakLoginDelegate?
 
@@ -127,9 +128,10 @@ public class InfomaniakLogin: InfomaniakLoginable {
     private var webviewTimeOutMessage: String?
     #endif
 
-    public init(config: Config) {
+    public init(config: Config, loginFormConfig: LoginFormConfig = LoginFormConfig()) {
         self.config = config
         networkLogin = InfomaniakNetworkLogin(config: config)
+        self.loginFormConfig = loginFormConfig
     }
 
     @available(iOS 13.0, *)
@@ -259,6 +261,9 @@ public class InfomaniakLogin: InfomaniakLoginable {
 
         if hideCreateAccountButton {
             urlComponents?.queryItems?.append(URLQueryItem(name: "hide_create_account", value: ""))
+        }
+        if loginFormConfig.skipAutoRedirect {
+            urlComponents?.queryItems?.append(URLQueryItem(name: "skipAutoRedirect", value: "true"))
         }
         return urlComponents?.url
     }
