@@ -128,14 +128,10 @@ public class InfomaniakLogin: InfomaniakLoginable {
     private var webviewTimeOutMessage: String?
     #endif
 
-    public init(config: Config, loginFormConfig: LoginFormConfig) {
+    public init(config: Config, loginFormConfig: LoginFormConfig = LoginFormConfig()) {
         self.config = config
         networkLogin = InfomaniakNetworkLogin(config: config)
         self.loginFormConfig = loginFormConfig
-    }
-    
-    public convenience init(config: Config) {
-        self.init(config: config, loginFormConfig: LoginFormConfig())
     }
 
     @available(iOS 13.0, *)
