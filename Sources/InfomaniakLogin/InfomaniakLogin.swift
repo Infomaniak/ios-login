@@ -38,7 +38,7 @@ public protocol InfomaniakLoginDelegate: AnyObject {
 }
 
 /// Something that can authentify with Infomaniak
-public protocol InfomaniakLoginable: AnyObject {
+public protocol InfomaniakLoginable {
     var config: InfomaniakLogin.Config { get }
 
     @available(iOS 13.0, *)
