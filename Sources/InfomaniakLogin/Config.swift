@@ -32,10 +32,6 @@ public extension InfomaniakLogin {
         public init(skipAutoRedirect: Bool = false) {
             self.skipAutoRedirect = skipAutoRedirect
         }
-            
-        public init() {
-            skipAutoRedirect = false
-        }
     }
         
     @frozen struct Config {
