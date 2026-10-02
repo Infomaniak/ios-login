@@ -17,9 +17,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Build
-        run: xcodebuild -scheme InfomaniakLogin build -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+        run: xcodebuild -scheme InfomaniakLogin build -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5"
       - name: Test
-        run: xcodebuild -scheme InfomaniakLogin test -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+        run: xcodebuild -scheme InfomaniakLogin test -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5"
 
   build_and_test_macOS:
     name: Build and Test project on macOS
